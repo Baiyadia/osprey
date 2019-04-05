@@ -1,0 +1,10 @@
+data:
+  address: 1
+  port: 8080
+bourses:
+  okcoin:
+    name: ok-prod
+    address: http://www.baidu.com
+  huobi:
+    name: 火币-prod
+    address: http://www.baiodu.com
