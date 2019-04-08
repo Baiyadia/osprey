@@ -1,10 +1,11 @@
 data:
-  address: 1
-  port: 8080
-bourses:
-  okcoin:
-    name: ok-prod
-    address: http://www.baidu.com
-  huobi:
-    name: 火币-prod
-    address: http://www.baiodu.com
+  address: @data.address@
+  port: @data.port@
+osprey:
+  bourses:
+    okcoin:
+      name: @osprey.bourses.okcoin.name@
+      url: @osprey.bourses.okcoin.url@
+    huobi:
+      name: @osprey.bourses.huobi.name@
+      url: @osprey.bourses.huobi.url@

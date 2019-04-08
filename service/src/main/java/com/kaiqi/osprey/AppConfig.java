@@ -2,19 +2,36 @@ package com.kaiqi.osprey;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.Map;
+import java.util.HashMap;
 
-@Data
-@Component
-@ConfigurationProperties(prefix = "bourses")
+@Configuration
 public class AppConfig {
 
-    public Map<String, Bourse> bourses;
+    @Bean
+    @ConfigurationProperties(prefix = "osprey.bourses")
+    public HashMap<String, HashMap<String, String>> bourseConfig() {
+        return new HashMap();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "data")
+    public ServerConfig serverConfig() {
+        return new ServerConfig();
+    }
 
     @Data
-    class Bourse {
+    public class ServerConfig {
+
+        public String address;
+        public String port;
+    }
+
+    @Data
+    public class Bourse {
+
         public String name;
         public String url;
     }

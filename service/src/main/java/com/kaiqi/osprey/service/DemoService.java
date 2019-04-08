@@ -15,7 +15,8 @@ public class DemoService extends BaseService {
         } finally {
             System.out.println("finally执行");
         }
-        System.out.println(serverConfig.getAddress());
+        System.out.println(appConf.serverConfig());
+        System.out.println(appConf.bourseConfig());
         return "方法返回值";
     }
 
