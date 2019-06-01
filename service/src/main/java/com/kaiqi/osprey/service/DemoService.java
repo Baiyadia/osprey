@@ -2,6 +2,7 @@ package com.kaiqi.osprey.service;
 
 import com.kaiqi.osprey.annotation.TestValidate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DemoService extends BaseService {
