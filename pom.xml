@@ -15,8 +15,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>api</module>
-        <module>service</module>
+        <module>osprey-web</module>
+        <module>osprey-common</module>
+        <module>osprey-user</module>
     </modules>
 
     <dependencies>
@@ -40,6 +41,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.14</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.47</version>
         </dependency>
     </dependencies>
 
