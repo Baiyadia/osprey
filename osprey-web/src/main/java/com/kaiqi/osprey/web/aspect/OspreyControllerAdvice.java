@@ -1,9 +1,9 @@
 package com.kaiqi.osprey.web.aspect;
 
-import com.kaiqi.osprey.commons.ResponseResult;
-import com.kaiqi.osprey.commons.enums.ErrorCodeEnum;
-import com.kaiqi.osprey.exception.OspreyBizException;
-import com.kaiqi.osprey.util.ResultUtils;
+import com.kaiqi.osprey.common.util.ResultUtils;
+import com.kaiqi.osprey.common.commons.ResponseResult;
+import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
+import com.kaiqi.osprey.common.exception.OspreyBizException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.http.HttpEntity;

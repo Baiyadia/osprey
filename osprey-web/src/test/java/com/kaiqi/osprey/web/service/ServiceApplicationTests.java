@@ -1,15 +1,13 @@
 package com.kaiqi.osprey.web.service;
 
+import com.kaiqi.osprey.web.AbstractTest;
+import com.kaiqi.osprey.web.biz.DemoService;
+import com.kaiqi.osprey.web.biz.KQService;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class ServiceApplicationTests {
+public class ServiceApplicationTests extends AbstractTest {
 
     @Resource
     private DemoService demoService;
