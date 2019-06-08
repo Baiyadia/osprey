@@ -9,6 +9,17 @@ spring:
     password: @spring.datasource.password@
     max-active: 10
     min-idle: 0
+  redis:
+    host: @spring.redis.host@
+    port: @spring.redis.port@
+    timeout: @spring.redis.timeout@
+#    password: @spring.redis.password@
+    lettuce:
+      pool:
+        max-active: @spring.redis.pool.max-active@
+        max-idle: @spring.redis.pool.max-idle@
+        max-wait: @spring.redis.pool.max-wait@
+        min-idle: @spring.redis.pool.min-idle@
 mybatis:
   mapper-locations: classpath:mapper/*.xml
 data:

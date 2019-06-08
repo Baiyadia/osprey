@@ -1,9 +1,11 @@
 package com.kaiqi.osprey.web.service;
 
+import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.web.AbstractTest;
 import com.kaiqi.osprey.web.domain.User;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -20,10 +22,20 @@ public class UserServiceTest extends AbstractTest {
     @Resource
     private UserService userService;
 
+    @Autowired
+    private REDIS redis;
+
     @Test
     public void testGet() {
         List<User> all = userService.getAll();
         Assert.assertNotNull(all);
+    }
+
+    @Test
+    public void testRedis() {
+        String test = redis.get("test");
+
+        Assert.assertNotNull(test);
     }
 
 }

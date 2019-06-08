@@ -1,16 +1,16 @@
 package com.kaiqi.osprey.web.service;
 
 import com.kaiqi.osprey.web.AbstractTest;
-import com.kaiqi.osprey.web.biz.DemoService;
+import com.kaiqi.osprey.web.biz.DemoBiz;
 import com.kaiqi.osprey.web.biz.KQService;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 
-public class ServiceApplicationTests extends AbstractTest {
+public class ServiceApplicationTest extends AbstractTest {
 
     @Resource
-    private DemoService demoService;
+    private DemoBiz demoService;
 
     @Resource
     private KQService kqService;

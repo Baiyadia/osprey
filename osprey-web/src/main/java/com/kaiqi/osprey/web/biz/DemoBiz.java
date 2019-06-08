@@ -1,10 +1,17 @@
 package com.kaiqi.osprey.web.biz;
 
+import com.alibaba.fastjson.JSONObject;
+import com.kaiqi.osprey.common.annotation.RedisCache;
 import com.kaiqi.osprey.common.annotation.ReliableTransaction;
-import org.springframework.stereotype.Service;
+import com.kaiqi.osprey.web.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-@Service
-public class DemoService extends BaseService {
+@Component
+public class DemoBiz extends BaseService {
+
+    @Autowired
+    private UserService userService;
 
     @ReliableTransaction()
     public String testValidate(String arg) {
@@ -18,6 +25,11 @@ public class DemoService extends BaseService {
         System.out.println(appConf.serverConfig());
         System.out.println(appConf.bourseConfig());
         return "方法返回值";
+    }
+
+    @RedisCache(key = "'test2'", timeout = 60)
+    public String getUsers() {
+        return JSONObject.toJSONString(userService.getAll());
     }
 
 }
