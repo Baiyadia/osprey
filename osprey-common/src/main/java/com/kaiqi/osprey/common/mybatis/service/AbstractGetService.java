@@ -12,7 +12,7 @@ import java.util.List;
  * @param <Po>
  * @param <Example>
  * @param <Type>    Key字段数据类型(Integer,Long,String等)
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public abstract class AbstractGetService<Dao extends SelectRepository<Po, Example, Type>, Po, Example, Type>

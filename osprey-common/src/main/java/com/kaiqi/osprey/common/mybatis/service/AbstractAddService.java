@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @param <Dao>
  * @param <Po>
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public abstract class AbstractAddService<Dao extends InsertRepository<Po>, Po> implements AddService<Po> {

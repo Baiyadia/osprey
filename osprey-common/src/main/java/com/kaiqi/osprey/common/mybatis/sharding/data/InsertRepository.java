@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @param <T>
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public interface InsertRepository<T> {

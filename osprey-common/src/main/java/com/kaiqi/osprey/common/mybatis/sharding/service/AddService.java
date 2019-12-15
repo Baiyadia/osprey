@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @param <T> Po
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public interface AddService<T> {

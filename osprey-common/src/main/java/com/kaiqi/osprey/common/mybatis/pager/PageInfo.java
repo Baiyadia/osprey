@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 /**
  * 辅助分页类 <br>
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 @Data

@@ -8,7 +8,7 @@ import java.util.List;
  * @param <T> Po
  * @param <U> Example
  * @param <K> Key字段数据类型(Integer,Long,String等)
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public interface DeleteRepository<T, U, K> {

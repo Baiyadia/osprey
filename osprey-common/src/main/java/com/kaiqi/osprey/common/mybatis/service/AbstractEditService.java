@@ -9,7 +9,7 @@ import java.util.List;
  * @param <Dao>
  * @param <Po>
  * @param <Example>
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public abstract class AbstractEditService<Dao extends UpdateRepository<Po, Example>, Po, Example>

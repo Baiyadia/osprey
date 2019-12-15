@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @param <T> Po
  * @param <U> Example
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public interface UpdateRepository<T, U> {

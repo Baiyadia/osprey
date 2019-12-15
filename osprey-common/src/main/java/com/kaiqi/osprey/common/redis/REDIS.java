@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * @author newex-team
+ * @author wangs
  * @data 30/03/2018
  */
 

@@ -6,12 +6,12 @@ import com.kaiqi.osprey.common.exception.OspreyBizException;
 
 /**
  * @author wangs
- * @title: ResultUtils
+ * @title: ResultUtil
  * @package com.kaiqi.osprey.util
  * @description: TODO
  * @date 2019-06-01 22:15
  */
-public class ResultUtils {
+public class ResultUtil {
 
     public static ResponseResult success(Object data) {
         return new ResponseResult("success", 0, "", data);

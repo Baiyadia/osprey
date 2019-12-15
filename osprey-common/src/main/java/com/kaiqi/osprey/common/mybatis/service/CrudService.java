@@ -6,7 +6,7 @@ package com.kaiqi.osprey.common.mybatis.service;
  * @param <T> Po
  * @param <U> Example
  * @param <K> key字段数据类型(Integer,Long,String等)
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public interface CrudService<T, U, K> extends

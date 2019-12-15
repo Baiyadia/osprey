@@ -10,7 +10,7 @@ import java.util.List;
  * @param <Dao>
  * @param <Po>
  * @param <Example>
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  */
 public abstract class AbstractCrudService<Dao extends CrudRepository<Po, Example, Type>, Po, Example, Type>
