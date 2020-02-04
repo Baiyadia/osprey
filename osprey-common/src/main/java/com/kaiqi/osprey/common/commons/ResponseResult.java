@@ -1,26 +1,36 @@
 package com.kaiqi.osprey.common.commons;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
+ * ResponseBody注解返回的JSON对象类
+ *
  * @author wangs
- * @title: ResponseResult
- * @package com.kaiqi.osprey.commons
- * @description: TODO
- * @date 2019-06-01 22:17
+ * @date 2017/12/09
  */
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
-public class ResponseResult implements Serializable {
+@AllArgsConstructor
+public class ResponseResult<T> implements Serializable {
 
-    private String result;
-    private Integer errorCode;
-    private String errorMsg;
-    private Object data;
+    /**
+     * 0表示成功，>0表示失败,<0系统保留
+     */
+    private int code;
 
+    /**
+     * 提示信息
+     */
+    private String msg;
+
+    /**
+     * 返回数据
+     */
+    private T data;
 }

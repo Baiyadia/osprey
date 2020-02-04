@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/osprey/index")
 public class IndexController {
 
-    @GetMapping(value = "/index/{walletId}")
+    @GetMapping(value = "/{walletId}")
     ResponseResult index(@PathVariable("walletId") Long walletId,
                          @RequestParam(value = "pageNum", required = false, defaultValue = "1") final int pageNum,
                          @RequestParam(value = "pageSize", required = false, defaultValue = "10") final int pageSize) {

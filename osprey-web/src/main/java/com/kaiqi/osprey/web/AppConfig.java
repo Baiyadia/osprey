@@ -17,7 +17,7 @@ public class AppConfig {
     }
 
     @Bean
-    @ConfigurationProperties(prefix = "dao")
+    @ConfigurationProperties(prefix = "data")
     public ServerConfig serverConfig() {
         return new ServerConfig();
     }

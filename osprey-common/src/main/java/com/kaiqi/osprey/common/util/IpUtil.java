@@ -29,4 +29,15 @@ public class IpUtil {
         }
         return request.getRemoteAddr();
     }
+
+
+    /**
+     * Long类型ip转为String类型
+     *
+     */
+    public static long toLong(String ip) {
+        String[] octets = ip.split("\\.");
+        return (Long.parseLong(octets[0]) << 24) + (Integer.parseInt(octets[1]) << 16)
+                + (Integer.parseInt(octets[2]) << 8) + Integer.parseInt(octets[3]);
+    }
 }

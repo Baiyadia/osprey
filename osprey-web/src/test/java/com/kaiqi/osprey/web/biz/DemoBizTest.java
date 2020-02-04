@@ -18,7 +18,7 @@ public class DemoBizTest extends AbstractTest {
 
     @Test
     public void testGetUsers() {
-        String users = demoBiz.getUsers();
+        String users = demoBiz.testJDBC();
         System.out.println(users);
     }
 

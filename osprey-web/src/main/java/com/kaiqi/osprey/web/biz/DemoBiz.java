@@ -2,19 +2,22 @@ package com.kaiqi.osprey.web.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kaiqi.osprey.common.annotation.RedisCache;
-import com.kaiqi.osprey.common.annotation.ReliableTransaction;
-import com.kaiqi.osprey.web.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.kaiqi.osprey.common.redis.REDIS;
+import com.kaiqi.osprey.service.service.UserService;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component
 public class DemoBiz extends BaseService {
 
-    @Autowired
+    @Resource
     private UserService userService;
 
-    @ReliableTransaction()
-    public String testValidate(String arg) {
+    @Resource
+    private REDIS redis;
+
+    public String testGetProperties() {
         try {
             System.out.println("方法执行");
         } catch (Exception e) {
@@ -27,9 +30,21 @@ public class DemoBiz extends BaseService {
         return "方法返回值";
     }
 
-    @RedisCache(key = "'test2'", timeout = 60)
-    public String getUsers() {
-        return JSONObject.toJSONString(userService.getAll());
+    public String testJDBC() {
+        String result = JSONObject.toJSONString(userService.getAll());
+        System.out.println(result);
+        return result;
+    }
+
+    public String testRedis() {
+        String result = redis.get("test");
+        System.out.println(result);
+        return result;
+    }
+
+    @RedisCache(key = "'testCatch'", timeout = 60)
+    public String testCatch() {
+        return "catchValue";
     }
 
 }

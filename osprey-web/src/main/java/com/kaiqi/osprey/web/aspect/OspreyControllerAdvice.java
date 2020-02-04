@@ -1,6 +1,6 @@
 package com.kaiqi.osprey.web.aspect;
 
-import com.kaiqi.osprey.common.util.ResultUtils;
+import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.exception.OspreyBizException;
@@ -63,9 +63,9 @@ public class OspreyControllerAdvice {
     public ResponseResult customExceptionHandler(Throwable e) {
         log.error("");
         if (e instanceof OspreyBizException) {
-            return ResultUtils.failure((OspreyBizException) e);
+            return ResultUtil.failure((OspreyBizException) e);
         }
-        return ResultUtils.failure();
+        return ResultUtil.failure();
     }
 
     /**
@@ -78,7 +78,7 @@ public class OspreyControllerAdvice {
     @ResponseBody
     ResponseResult handleException(Exception e) {
         log.error(e.getMessage(), e);
-        return ResultUtils.failure();
+        return ResultUtil.failure();
     }
 
     /**
@@ -92,7 +92,7 @@ public class OspreyControllerAdvice {
     @ResponseBody
     ResponseResult handleOspreyBizException(OspreyBizException e) {
         log.error(e.getMessage(), e);
-        return ResultUtils.failure(e);
+        return ResultUtil.failure(e);
     }
 
     /**
@@ -105,7 +105,7 @@ public class OspreyControllerAdvice {
     @ResponseBody
     ResponseResult handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
-        return ResultUtils.failure(ErrorCodeEnum.ARGUMENT_VALID_EXCEPTION);
+        return ResultUtil.failure(ErrorCodeEnum.ARGUMENT_VALID_EXCEPTION);
     }
 
 }
