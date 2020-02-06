@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * 用户信息表 服务实现
+ *
  * @author youpin-team
- * @date 2019-06-03 16:36:46
+ * @date 2020-02-06 12:07:00
  */
 @Slf4j
 @Service
@@ -21,8 +23,8 @@ public class UserServiceImpl extends AbstractCrudService<UserRepository, User, U
     private UserRepository userRepository;
 
     @Override
-    protected UserExample getPageExample(String fieldName, String keyword) {
-        UserExample example = new UserExample();
+    protected UserExample getPageExample(final String fieldName, final String keyword) {
+        final UserExample example = new UserExample();
         example.createCriteria().andFieldLike(fieldName, keyword);
         return example;
     }

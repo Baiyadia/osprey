@@ -6,8 +6,10 @@ import com.kaiqi.osprey.service.domain.User;
 import org.springframework.stereotype.Repository;
 
 /**
- * @author wangs
- * @date 2019-06-03 16:36:46
+ * 用户信息表 数据访问类
+ *
+ * @author youpin-team
+ * @date 2020-02-06 12:07:00
  */
 @Repository
 public interface UserRepository extends CrudRepository<User, UserExample, Long> {

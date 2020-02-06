@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kaiqi.osprey.service.dao.UserRepository">
+<mapper namespace="com.kaiqi.osprey.service.dao.UserFriendRepository">
   <!-- CodeBuilder Generated -->
-  <resultMap id="UserMap" type="com.kaiqi.osprey.service.domain.User">
+  <resultMap id="UserFriendMap" type="com.kaiqi.osprey.service.domain.UserFriend">
     <id column="id" property="id" jdbcType="BIGINT" />
     <result column="user_id" property="userId" jdbcType="BIGINT" />
-    <result column="open_id" property="openId" jdbcType="BIGINT" />
-    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
-    <result column="nickname" property="nickname" jdbcType="VARCHAR" />
-    <result column="email" property="email" jdbcType="VARCHAR" />
-    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
-    <result column="password" property="password" jdbcType="VARCHAR" />
-    <result column="trade_password_crypto_hash" property="tradePasswordCryptoHash" jdbcType="VARCHAR" />
-    <result column="area_code" property="areaCode" jdbcType="INTEGER" />
-    <result column="register_type" property="registerType" jdbcType="INTEGER" />
-    <result column="anti_phishing_code" property="antiPhishingCode" jdbcType="VARCHAR" />
-    <result column="reg_ip" property="regIp" jdbcType="VARCHAR" />
-    <result column="last_login_ip" property="lastLoginIp" jdbcType="VARCHAR" />
-    <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
-    <result column="trade_pass_update" property="tradePassUpdate" jdbcType="TIMESTAMP" />
-    <result column="contact_count" property="contactCount" jdbcType="INTEGER" />
+    <result column="friend_id" property="friendId" jdbcType="BIGINT" />
+    <result column="friend_nickname" property="friendNickname" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
     <result column="status" property="status" jdbcType="INTEGER" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
@@ -54,12 +42,10 @@
     </where>
   </sql>
   <sql id="Table_Name">
-    user
+    user_friend
   </sql>
   <sql id="Base_Column_List_Without_Id">
-    user_id, open_id, parent_id, nickname, email, mobile, password, trade_password_crypto_hash, 
-    area_code, register_type, anti_phishing_code, reg_ip, last_login_ip, device_id, trade_pass_update, 
-    contact_count, status, create_time, update_time
+    user_id, friend_id, friend_nickname, type, status, create_time, update_time
   </sql>
   <sql id="Base_Column_List">
     id, 
@@ -69,50 +55,14 @@
     <if test="record.userId != null">
       user_id,
     </if>
-    <if test="record.openId != null">
-      open_id,
+    <if test="record.friendId != null">
+      friend_id,
     </if>
-    <if test="record.parentId != null">
-      parent_id,
+    <if test="record.friendNickname != null">
+      friend_nickname,
     </if>
-    <if test="record.nickname != null">
-      nickname,
-    </if>
-    <if test="record.email != null">
-      email,
-    </if>
-    <if test="record.mobile != null">
-      mobile,
-    </if>
-    <if test="record.password != null">
-      password,
-    </if>
-    <if test="record.tradePasswordCryptoHash != null">
-      trade_password_crypto_hash,
-    </if>
-    <if test="record.areaCode != null">
-      area_code,
-    </if>
-    <if test="record.registerType != null">
-      register_type,
-    </if>
-    <if test="record.antiPhishingCode != null">
-      anti_phishing_code,
-    </if>
-    <if test="record.regIp != null">
-      reg_ip,
-    </if>
-    <if test="record.lastLoginIp != null">
-      last_login_ip,
-    </if>
-    <if test="record.deviceId != null">
-      device_id,
-    </if>
-    <if test="record.tradePassUpdate != null">
-      trade_pass_update,
-    </if>
-    <if test="record.contactCount != null">
-      contact_count,
+    <if test="record.type != null">
+      type,
     </if>
     <if test="record.status != null">
       status,
@@ -128,50 +78,14 @@
     <if test="record.userId != null">
       #{record.userId,jdbcType=BIGINT},
     </if>
-    <if test="record.openId != null">
-      #{record.openId,jdbcType=BIGINT},
+    <if test="record.friendId != null">
+      #{record.friendId,jdbcType=BIGINT},
     </if>
-    <if test="record.parentId != null">
-      #{record.parentId,jdbcType=BIGINT},
+    <if test="record.friendNickname != null">
+      #{record.friendNickname,jdbcType=VARCHAR},
     </if>
-    <if test="record.nickname != null">
-      #{record.nickname,jdbcType=VARCHAR},
-    </if>
-    <if test="record.email != null">
-      #{record.email,jdbcType=VARCHAR},
-    </if>
-    <if test="record.mobile != null">
-      #{record.mobile,jdbcType=VARCHAR},
-    </if>
-    <if test="record.password != null">
-      #{record.password,jdbcType=VARCHAR},
-    </if>
-    <if test="record.tradePasswordCryptoHash != null">
-      #{record.tradePasswordCryptoHash,jdbcType=VARCHAR},
-    </if>
-    <if test="record.areaCode != null">
-      #{record.areaCode,jdbcType=INTEGER},
-    </if>
-    <if test="record.registerType != null">
-      #{record.registerType,jdbcType=INTEGER},
-    </if>
-    <if test="record.antiPhishingCode != null">
-      #{record.antiPhishingCode,jdbcType=VARCHAR},
-    </if>
-    <if test="record.regIp != null">
-      #{record.regIp,jdbcType=VARCHAR},
-    </if>
-    <if test="record.lastLoginIp != null">
-      #{record.lastLoginIp,jdbcType=VARCHAR},
-    </if>
-    <if test="record.deviceId != null">
-      #{record.deviceId,jdbcType=VARCHAR},
-    </if>
-    <if test="record.tradePassUpdate != null">
-      #{record.tradePassUpdate,jdbcType=TIMESTAMP},
-    </if>
-    <if test="record.contactCount != null">
-      #{record.contactCount,jdbcType=INTEGER},
+    <if test="record.type != null">
+      #{record.type,jdbcType=INTEGER},
     </if>
     <if test="record.status != null">
       #{record.status,jdbcType=INTEGER},
@@ -185,21 +99,9 @@
   </sql>
   <sql id="Batch_Insert_Values">
     #{record.userId,jdbcType=BIGINT},
-    #{record.openId,jdbcType=BIGINT},
-    #{record.parentId,jdbcType=BIGINT},
-    #{record.nickname,jdbcType=VARCHAR},
-    #{record.email,jdbcType=VARCHAR},
-    #{record.mobile,jdbcType=VARCHAR},
-    #{record.password,jdbcType=VARCHAR},
-    #{record.tradePasswordCryptoHash,jdbcType=VARCHAR},
-    #{record.areaCode,jdbcType=INTEGER},
-    #{record.registerType,jdbcType=INTEGER},
-    #{record.antiPhishingCode,jdbcType=VARCHAR},
-    #{record.regIp,jdbcType=VARCHAR},
-    #{record.lastLoginIp,jdbcType=VARCHAR},
-    #{record.deviceId,jdbcType=VARCHAR},
-    #{record.tradePassUpdate,jdbcType=TIMESTAMP},
-    #{record.contactCount,jdbcType=INTEGER},
+    #{record.friendId,jdbcType=BIGINT},
+    #{record.friendNickname,jdbcType=VARCHAR},
+    #{record.type,jdbcType=INTEGER},
     #{record.status,jdbcType=INTEGER},
     #{record.createTime,jdbcType=TIMESTAMP},
     #{record.updateTime,jdbcType=TIMESTAMP},
@@ -212,50 +114,14 @@
     <if test="record.userId != null">
       user_id = #{record.userId,jdbcType=BIGINT},
     </if>
-    <if test="record.openId != null">
-      open_id = #{record.openId,jdbcType=BIGINT},
+    <if test="record.friendId != null">
+      friend_id = #{record.friendId,jdbcType=BIGINT},
     </if>
-    <if test="record.parentId != null">
-      parent_id = #{record.parentId,jdbcType=BIGINT},
+    <if test="record.friendNickname != null">
+      friend_nickname = #{record.friendNickname,jdbcType=VARCHAR},
     </if>
-    <if test="record.nickname != null">
-      nickname = #{record.nickname,jdbcType=VARCHAR},
-    </if>
-    <if test="record.email != null">
-      email = #{record.email,jdbcType=VARCHAR},
-    </if>
-    <if test="record.mobile != null">
-      mobile = #{record.mobile,jdbcType=VARCHAR},
-    </if>
-    <if test="record.password != null">
-      password = #{record.password,jdbcType=VARCHAR},
-    </if>
-    <if test="record.tradePasswordCryptoHash != null">
-      trade_password_crypto_hash = #{record.tradePasswordCryptoHash,jdbcType=VARCHAR},
-    </if>
-    <if test="record.areaCode != null">
-      area_code = #{record.areaCode,jdbcType=INTEGER},
-    </if>
-    <if test="record.registerType != null">
-      register_type = #{record.registerType,jdbcType=INTEGER},
-    </if>
-    <if test="record.antiPhishingCode != null">
-      anti_phishing_code = #{record.antiPhishingCode,jdbcType=VARCHAR},
-    </if>
-    <if test="record.regIp != null">
-      reg_ip = #{record.regIp,jdbcType=VARCHAR},
-    </if>
-    <if test="record.lastLoginIp != null">
-      last_login_ip = #{record.lastLoginIp,jdbcType=VARCHAR},
-    </if>
-    <if test="record.deviceId != null">
-      device_id = #{record.deviceId,jdbcType=VARCHAR},
-    </if>
-    <if test="record.tradePassUpdate != null">
-      trade_pass_update = #{record.tradePassUpdate,jdbcType=TIMESTAMP},
-    </if>
-    <if test="record.contactCount != null">
-      contact_count = #{record.contactCount,jdbcType=INTEGER},
+    <if test="record.type != null">
+      type = #{record.type,jdbcType=INTEGER},
     </if>
     <if test="record.status != null">
       status = #{record.status,jdbcType=INTEGER},
@@ -307,7 +173,7 @@
       </trim>
     </foreach>
     ON DUPLICATE KEY UPDATE
-    user_id = VALUES(user_id), open_id = VALUES(open_id), parent_id = VALUES(parent_id), nickname = VALUES(nickname), email = VALUES(email), mobile = VALUES(mobile), password = VALUES(password), trade_password_crypto_hash = VALUES(trade_password_crypto_hash), area_code = VALUES(area_code), register_type = VALUES(register_type), anti_phishing_code = VALUES(anti_phishing_code), reg_ip = VALUES(reg_ip), last_login_ip = VALUES(last_login_ip), device_id = VALUES(device_id), trade_pass_update = VALUES(trade_pass_update), contact_count = VALUES(contact_count), status = VALUES(status), create_time = VALUES(create_time), update_time = VALUES(update_time)
+    user_id = VALUES(user_id), friend_id = VALUES(friend_id), friend_nickname = VALUES(friend_nickname), type = VALUES(type), status = VALUES(status), create_time = VALUES(create_time), update_time = VALUES(update_time)
   </insert>
   <!-- end insert -->
   <!-- delete -->
@@ -363,14 +229,14 @@
   </update>
   <!-- end update -->
   <!-- select -->
-  <select id="selectById" parameterType="java.util.Map" resultMap="UserMap">
+  <select id="selectById" parameterType="java.util.Map" resultMap="UserFriendMap">
     select 
     <include refid="Base_Column_List" />
     from 
     <include refid="Table_Name" />
     where id = #{id,jdbcType=BIGINT}
   </select>
-  <select id="selectByExample" resultMap="UserMap" parameterType="java.util.Map">
+  <select id="selectByExample" resultMap="UserFriendMap" parameterType="java.util.Map">
     select
     <if test="example != null and example.distinct">
       distinct
@@ -385,7 +251,7 @@
       order by ${example.orderByClause}
     </if>
   </select>
-  <select id="selectOneByExample" resultMap="UserMap" parameterType="java.util.Map">
+  <select id="selectOneByExample" resultMap="UserFriendMap" parameterType="java.util.Map">
     select
     <include refid="Base_Column_List" />
     from 
@@ -398,7 +264,7 @@
     </if>
     limit 1
   </select>
-  <select id="selectIn" resultMap="UserMap" parameterType="java.util.Map">
+  <select id="selectIn" resultMap="UserFriendMap" parameterType="java.util.Map">
     select
     <include refid="Base_Column_List" />
     from 
@@ -422,7 +288,7 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
-  <select id="selectByPager" resultMap="UserMap" parameterType="java.util.Map">
+  <select id="selectByPager" resultMap="UserFriendMap" parameterType="java.util.Map">
     select
     <include refid="Base_Column_List" />
     from 

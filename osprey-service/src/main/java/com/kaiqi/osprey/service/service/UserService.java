@@ -5,8 +5,10 @@ import com.kaiqi.osprey.service.criteria.UserExample;
 import com.kaiqi.osprey.service.domain.User;
 
 /**
+ * 用户信息表 服务接口
+ *
  * @author youpin-team
- * @date 2019-06-03 16:36:46
+ * @date 2020-02-06 12:07:00
  */
 public interface UserService extends CrudService<User, UserExample, Long> {
 

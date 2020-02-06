@@ -24,7 +24,7 @@ public class JwtTokenUtils {
     private static SessionService<SessionInfo> sessionService;
 
     @Autowired
-    public JwtTokenUtils(final JwtTokenProvider jwtTokenProvider, final SessionService<SessionInfo> sessionService) {
+    public JwtTokenUtils(JwtTokenProvider jwtTokenProvider, SessionService<SessionInfo> sessionService) {
         JwtTokenUtils.jwtTokenProvider = jwtTokenProvider;
         JwtTokenUtils.sessionService = sessionService;
     }
@@ -35,7 +35,7 @@ public class JwtTokenUtils {
      * @param key 缓存key名称
      * @return 状态值
      */
-    public static Integer getGlobalFrozenStatus(final String key) {
+    public static Integer getGlobalFrozenStatus(String key) {
         return sessionService.getGlobalStatus(key);
     }
 
@@ -45,7 +45,7 @@ public class JwtTokenUtils {
      * @param key    缓存key名称
      * @param status 状态值
      */
-    public static void setGlobalFrozenStatus(final String key, final Integer status) {
+    public static void setGlobalFrozenStatus(String key, Integer status) {
         sessionService.setGlobalStatus(key, status);
     }
 
@@ -54,7 +54,7 @@ public class JwtTokenUtils {
      *
      * @param key 缓存key名称
      */
-    public static void removeGlobalFrozenStatus(final String key) {
+    public static void removeGlobalFrozenStatus(String key) {
         sessionService.deleteGlobalStatus(key);
     }
 
@@ -64,8 +64,8 @@ public class JwtTokenUtils {
      * @param request HttpServletRequest
      * @return @see #JwtUserDetails
      */
-    public static JwtUserDetails getCurrentLoginUser(final HttpServletRequest request) {
-        final JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
+    public static JwtUserDetails getCurrentLoginUser(HttpServletRequest request) {
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
         if (jwtUserDetails == null) {
             return JwtUserDetails.builder().status(JwtConsts.STATUS_NOT_EXISTS).build();
         }
@@ -78,14 +78,14 @@ public class JwtTokenUtils {
      * @param request HttpServletRequest
      * @return @see #JwtUserDetails
      */
-    public static JwtUserDetails getCurrentLoginUserFromToken(final HttpServletRequest request) {
-        final String tokenName = jwtTokenProvider.getJwtConfig().getRequestHeaderName();
-        final String token = request.getHeader(tokenName);
+    public static JwtUserDetails getCurrentLoginUserFromToken(HttpServletRequest request) {
+        String tokenName = jwtTokenProvider.getJwtConfig().getRequestHeaderName();
+        String token = request.getHeader(tokenName);
         if (StringUtils.isBlank(token)) {
             log.warn("jwt token is empty");
             return JwtUserDetails.builder().status(JwtConsts.STATUS_NOT_EXISTS).build();
         }
-        final JwtUserDetails jwtUserDetails = jwtTokenProvider.getJwtUserDetails(token);
+        JwtUserDetails jwtUserDetails = jwtTokenProvider.getJwtUserDetails(token);
         if (jwtUserDetails.getStatus().equals(JwtConsts.STATUS_NOT_EXISTS)) {
             log.warn("jwt token is expired");
             return JwtUserDetails.builder().status(JwtConsts.STATUS_NOT_EXISTS).build();
@@ -96,7 +96,7 @@ public class JwtTokenUtils {
             return jwtUserDetails;
         }
 
-        final SessionInfo session = sessionService.getByToken(token);
+        SessionInfo session = sessionService.getByToken(token);
         if (session == null) {
             log.warn("jwt token is expired");
             return JwtUserDetails.builder().status(JwtConsts.STATUS_NOT_EXISTS).build();
@@ -115,8 +115,8 @@ public class JwtTokenUtils {
      *
      * @param request http request
      */
-    public static void clearSession(final HttpServletRequest request) {
-        final JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
+    public static void clearSession(HttpServletRequest request) {
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
         if (jwtUserDetails != null) {
             sessionService.remove(jwtUserDetails.getUserId());
         }
@@ -127,7 +127,7 @@ public class JwtTokenUtils {
      *
      * @param userId 登录用户id
      */
-    public static void clearSession(final long userId) {
+    public static void clearSession(long userId) {
         sessionService.remove(userId);
     }
 
@@ -137,7 +137,7 @@ public class JwtTokenUtils {
      * @param userId 用户id
      * @return {@link SessionInfo}
      */
-    public static SessionInfo getSession(final long userId) {
+    public static SessionInfo getSession(long userId) {
         return sessionService.getByUserId(userId);
     }
 
@@ -148,7 +148,7 @@ public class JwtTokenUtils {
      * @param request        http request
      * @return access token
      */
-    public static String generateToken(final JwtUserDetails jwtUserDetails, final HttpServletRequest request) {
+    public static String generateToken(JwtUserDetails jwtUserDetails, HttpServletRequest request) {
         jwtUserDetails.setIp(ValidateUtils.getRequestIP(request));
         jwtUserDetails.setDevId(ValidateUtils.getDeviceId(request));
         return jwtTokenProvider.generateToken(jwtUserDetails);
@@ -161,17 +161,18 @@ public class JwtTokenUtils {
      * @param token          access token
      * @param request        http request
      */
-    public static void createSession(final JwtUserDetails jwtUserDetails, final String token, final HttpServletRequest request) {
-        final SessionInfo sessionInfo = SessionInfo.builder()
-                                                   .userId(jwtUserDetails.getUserId())
-                                                   .username(jwtUserDetails.getUsername())
-                                                   .status(jwtUserDetails.getStatus())
-                                                   .frozen(jwtUserDetails.getFrozen())
-                                                   .spotFrozen(jwtUserDetails.getSpotFrozen())
-                                                   .c2cFrozen(jwtUserDetails.getC2cFrozen())
-                                                   .contractsFrozen(jwtUserDetails.getContractsFrozen())
-                                                   .assetFrozen(jwtUserDetails.getAssetFrozen())
-                                                   .build();
+    public static void createSession(JwtUserDetails jwtUserDetails, String token, HttpServletRequest request) {
+        SessionInfo sessionInfo = SessionInfo
+                .builder()
+                .userId(jwtUserDetails.getUserId())
+                .username(jwtUserDetails.getUsername())
+                .status(jwtUserDetails.getStatus())
+                .frozen(jwtUserDetails.getFrozen())
+                .spotFrozen(jwtUserDetails.getSpotFrozen())
+                .c2cFrozen(jwtUserDetails.getC2cFrozen())
+                .contractsFrozen(jwtUserDetails.getContractsFrozen())
+                .assetFrozen(jwtUserDetails.getAssetFrozen())
+                .build();
         sessionService.save(token, sessionInfo);
     }
 
@@ -182,9 +183,9 @@ public class JwtTokenUtils {
      * @param request        http request
      * @return access token
      */
-    public static String generateTokenAndCreateSession(final JwtUserDetails jwtUserDetails,
-                                                       final HttpServletRequest request) {
-        final String accessToken = generateToken(jwtUserDetails, request);
+    public static String generateTokenAndCreateSession(JwtUserDetails jwtUserDetails,
+                                                       HttpServletRequest request) {
+        String accessToken = generateToken(jwtUserDetails, request);
         createSession(jwtUserDetails, accessToken, request);
         return accessToken;
     }
@@ -194,7 +195,7 @@ public class JwtTokenUtils {
      *
      * @param newSession {@link SessionInfo}
      */
-    public static void updateSession(final SessionInfo newSession) {
+    public static void updateSession(SessionInfo newSession) {
         sessionService.updateByUserId(newSession);
     }
 }
