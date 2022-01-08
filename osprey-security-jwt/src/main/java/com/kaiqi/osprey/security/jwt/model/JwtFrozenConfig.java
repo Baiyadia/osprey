@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.model;
 import com.kaiqi.osprey.security.jwt.enums.BizTypeEnum;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2018-07-04
  */
 public class JwtFrozenConfig {

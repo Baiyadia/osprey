@@ -18,16 +18,17 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * @author newex-team
+ * JwtToken生成器
+ * @author wangs
  * @date 2017/12/19
  */
 @Slf4j
 public class JwtTokenProvider {
 
-    private final JwtConfig jwtConfig;
-    private final JwtTokenCryptoProvider cryptoProvider;
+    private JwtConfig jwtConfig;
+    private JwtTokenCryptoProvider cryptoProvider;
 
-    public JwtTokenProvider(final JwtConfig jwtConfig, final JwtTokenCryptoProvider cryptoProvider) {
+    public JwtTokenProvider(JwtConfig jwtConfig, JwtTokenCryptoProvider cryptoProvider) {
         this.jwtConfig = jwtConfig;
         this.cryptoProvider = cryptoProvider;
     }
@@ -40,13 +41,13 @@ public class JwtTokenProvider {
         return this.cryptoProvider;
     }
 
-    public long getUserId(final String token) {
-        final JwtUserDetails jwtUserDetails = this.getJwtUserDetails(token);
+    public long getUserId(String token) {
+        JwtUserDetails jwtUserDetails = this.getJwtUserDetails(token);
         return jwtUserDetails.getUserId();
     }
 
-    public JwtUserDetails getJwtUserDetails(final String token) {
-        final JwtPublicClaims publicClaims = this.parseClaims(token);
+    public JwtUserDetails getJwtUserDetails(String token) {
+        JwtPublicClaims publicClaims = this.parseClaims(token);
         if (this.isExpiredToken(publicClaims.getExpiration())) {
             log.debug("token is expired");
             return JwtUserDetails.builder().status(-1).build();
@@ -54,10 +55,10 @@ public class JwtTokenProvider {
         return this.getJwtUserDetails(this.parseClaims(token));
     }
 
-    public JwtUserDetails getJwtUserDetails(final JwtPublicClaims publicClaims) {
-        final long userId = NumberUtils.toLong(this.decrypt(publicClaims.getUserId()), -1);
-        final long ip = NumberUtils.toLong(this.decrypt(publicClaims.getIp()), -1);
-        final String devId = this.decrypt(publicClaims.getDevId());
+    public JwtUserDetails getJwtUserDetails(JwtPublicClaims publicClaims) {
+        long userId = NumberUtils.toLong(this.decrypt(publicClaims.getUserId()), -1);
+        long ip = NumberUtils.toLong(this.decrypt(publicClaims.getIp()), -1);
+        String devId = this.decrypt(publicClaims.getDevId());
 
         return JwtUserDetails.builder()
                              .sid(publicClaims.getId())
@@ -69,28 +70,28 @@ public class JwtTokenProvider {
                              .build();
     }
 
-    public <T> T getClaims(final JwtPublicClaims claims, final Function<JwtPublicClaims, T> claimsResolver) {
+    public <T> T getClaims(JwtPublicClaims claims, Function<JwtPublicClaims, T> claimsResolver) {
         return claimsResolver.apply(claims);
     }
 
-    public JwtPublicClaims parseClaims(final String token) {
-        final Claims claims = Jwts.parser()
+    public JwtPublicClaims parseClaims(String token) {
+        Claims claims = Jwts.parser()
                                   .setSigningKey(this.jwtConfig.getSecret())
                                   .parseClaimsJws(token)
                                   .getBody();
         return new JwtPublicClaims(claims);
     }
 
-    public String generateToken(final JwtUserDetails jwtUserDetails) {
-        final String userId = this.encrypt(String.valueOf(jwtUserDetails.getUserId()));
-        final String ip = this.encrypt(String.valueOf(jwtUserDetails.getIp()));
-        final String devId = this.encrypt(jwtUserDetails.getDevId());
+    public String generateToken(JwtUserDetails jwtUserDetails) {
+        String userId = this.encrypt(String.valueOf(jwtUserDetails.getUserId()));
+        String ip = this.encrypt(String.valueOf(jwtUserDetails.getIp()));
+        String devId = this.encrypt(jwtUserDetails.getDevId());
 
-        final Date createdDate = jwtUserDetails.getCreated();
-        final Date expirationDate = ObjectUtils.defaultIfNull(jwtUserDetails.getExpired(), this.getExpirationDate(createdDate));
+        Date createdDate = jwtUserDetails.getCreated();
+        Date expirationDate = ObjectUtils.defaultIfNull(jwtUserDetails.getExpired(), this.getExpirationDate(createdDate));
         log.debug("doGenerateToken createdDate: {}", createdDate);
 
-        final JwtPublicClaims publicClaims = new JwtPublicClaims(new DefaultClaims());
+        JwtPublicClaims publicClaims = new JwtPublicClaims(new DefaultClaims());
         publicClaims
                 .setId(StringUtils.defaultIfBlank(jwtUserDetails.getSid(), UUID.randomUUID().toString()))
                 .setUserId(userId)
@@ -107,11 +108,11 @@ public class JwtTokenProvider {
                    .compact();
     }
 
-    public String refreshToken(final String token) {
-        final Date createdDate = JwtTokenTimeProvider.now();
-        final Date expirationDate = this.getExpirationDate(createdDate);
+    public String refreshToken(String token) {
+        Date createdDate = JwtTokenTimeProvider.now();
+        Date expirationDate = this.getExpirationDate(createdDate);
 
-        final Claims claims = this.parseClaims(token).getClaims();
+        Claims claims = this.parseClaims(token).getClaims();
         claims.setIssuedAt(createdDate);
         claims.setExpiration(expirationDate);
 
@@ -121,30 +122,30 @@ public class JwtTokenProvider {
                    .compact();
     }
 
-    public boolean canTokenBeRefreshed(final String token, final Date lastPasswordReset) {
-        final JwtPublicClaims jwtPublicClaims = this.parseClaims(token);
-        final Date created = jwtPublicClaims.getIssuedAt();
-        final Date expired = jwtPublicClaims.getExpiration();
+    public boolean canTokenBeRefreshed(String token, Date lastPasswordReset) {
+        JwtPublicClaims jwtPublicClaims = this.parseClaims(token);
+        Date created = jwtPublicClaims.getIssuedAt();
+        Date expired = jwtPublicClaims.getExpiration();
         return (this.isCreatedBeforeLastPasswordReset(created, lastPasswordReset) || this.isExpiredToken(expired));
     }
 
-    public boolean validateToken(final String token, final JwtUserDetails user) {
-        final JwtPublicClaims jwtPublicClaims = this.parseClaims(token);
-        final String username = jwtPublicClaims.getUsername();
-        final Date expired = jwtPublicClaims.getExpiration();
+    public boolean validateToken(String token, JwtUserDetails user) {
+        JwtPublicClaims jwtPublicClaims = this.parseClaims(token);
+        String username = jwtPublicClaims.getUsername();
+        Date expired = jwtPublicClaims.getExpiration();
         return (username.equals(user.getUsername())
                 && !this.isExpiredToken(expired));
     }
 
-    public boolean isExpiredToken(final Date expired) {
+    public boolean isExpiredToken(Date expired) {
         return expired.before(JwtTokenTimeProvider.now());
     }
 
-    public Date getExpirationDate(final Date createdDate) {
+    public Date getExpirationDate(Date createdDate) {
         return new Date(createdDate.getTime() + this.jwtConfig.getExpiration() * 1000);
     }
 
-    public boolean verifyIpAndDevice(final JwtUserDetails jwtUserDetails, final String deviceId, final long ip) {
+    public boolean verifyIpAndDevice(JwtUserDetails jwtUserDetails, String deviceId, long ip) {
         if (this.jwtConfig.isValidateIpAndDevice()) {
             return (jwtUserDetails.isNotFromSameDevice(deviceId) ||
                     jwtUserDetails.isNotFromSameIp(ip));
@@ -152,15 +153,15 @@ public class JwtTokenProvider {
         return false;
     }
 
-    private boolean isCreatedBeforeLastPasswordReset(final Date created, final Date lastPasswordReset) {
+    private boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
         return (lastPasswordReset != null && created.before(lastPasswordReset));
     }
 
-    private String encrypt(final String content) {
+    private String encrypt(String content) {
         return this.cryptoProvider.encrypt(StringUtils.defaultIfEmpty(content, ""), this.jwtConfig.getCryptoKey());
     }
 
-    private String decrypt(final String content) {
+    private String decrypt(String content) {
         return this.cryptoProvider.decrypt(StringUtils.defaultIfEmpty(content, ""), this.jwtConfig.getCryptoKey());
     }
 }

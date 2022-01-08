@@ -5,7 +5,7 @@ import com.kaiqi.osprey.common.crypto.AESUtil;
 /**
  * AES 加/解密提供者类
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 public class AesJwtTokenCryptoProvider implements JwtTokenCryptoProvider {

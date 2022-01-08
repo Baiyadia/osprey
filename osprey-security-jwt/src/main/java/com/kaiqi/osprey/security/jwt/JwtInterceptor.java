@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/11/20
  */
 @Slf4j
@@ -94,10 +94,6 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
         jwtUserDetails.setUsername(session.getUsername());
         jwtUserDetails.setStatus(session.getStatus());
         jwtUserDetails.setFrozen(session.getFrozen());
-        jwtUserDetails.setSpotFrozen(session.getSpotFrozen());
-        jwtUserDetails.setC2cFrozen(session.getC2cFrozen());
-        jwtUserDetails.setContractsFrozen(session.getContractsFrozen());
-        jwtUserDetails.setAssetFrozen(session.getAssetFrozen());
 
         if (jwtUserDetails.isForbidden()) {
             throw new JwtTokenForbiddenException();

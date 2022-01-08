@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.enums;
 import com.kaiqi.osprey.common.commons.enums.ErrorCode;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/29
  */
 public enum JwtSecurityErrorCode implements ErrorCode {

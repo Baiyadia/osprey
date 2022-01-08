@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.security.jwt.crypto;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 public interface JwtTokenCryptoProvider {

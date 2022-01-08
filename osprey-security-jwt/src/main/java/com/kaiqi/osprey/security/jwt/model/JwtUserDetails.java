@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Date;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/20
  */
 @Data
@@ -49,6 +49,16 @@ public class JwtUserDetails {
     private String username;
 
     /**
+     * 手机号
+     */
+    private String mobile;
+
+    /**
+     * 邮箱地址
+     */
+    private String email;
+
+    /**
      * 用户状态0为开启，1为禁用，-1表示不存在，其他保留，默认为0(从session中获取)
      */
     private Integer status;
@@ -58,25 +68,15 @@ public class JwtUserDetails {
      */
     private Integer frozen;
 
-    /**
-     * 是否冻结现货业务1表示是,0表示否，默认为0(从session中获取)
-     */
-    private Integer spotFrozen;
+//    /**
+//     * 是否同意了协议 0不同意 1同意
+//     */
+//    private Integer protocolAuthFlag;
 
     /**
-     * 是否冻结C2C业务1表示是,0表示否，默认为0(从session中获取)
+     * 是否设置了交易密码 0未设置 1已设置
      */
-    private Integer c2cFrozen;
-
-    /**
-     * 是否冻结合约业务1表示是,0表示否，默认为0(从session中获取)
-     */
-    private Integer contractsFrozen;
-
-    /**
-     * 是否冻结资产业务1表示是,0表示否，默认为0(从session中获取)
-     */
-    private Integer assetFrozen;
+    private Integer tradePasswordSetFlag;
 
     /**
      * 登录时间(从jwt中获取)
@@ -116,48 +116,12 @@ public class JwtUserDetails {
     }
 
     /**
-     * 当前用户现货交易业务是否被冻结
-     *
-     * @return true|false
-     */
-    public boolean isSpotFrozen() {
-        return Integer.valueOf(1).equals(this.spotFrozen);
-    }
-
-    /**
-     * 当前用户法币交易业务是否被冻结
-     *
-     * @return true|false
-     */
-    public boolean isC2CFrozen() {
-        return Integer.valueOf(1).equals(this.c2cFrozen);
-    }
-
-    /**
-     * 当前用户合约交易业务是否被冻结
-     *
-     * @return true|false
-     */
-    public boolean isContractsFrozen() {
-        return Integer.valueOf(1).equals(this.contractsFrozen);
-    }
-
-    /**
-     * 当前用户资产业务是否被冻结
-     *
-     * @return true|false
-     */
-    public boolean isAssetFrozen() {
-        return Integer.valueOf(1).equals(this.assetFrozen);
-    }
-
-    /**
      * 当前登录用户是否来自同一IP请求
      *
      * @param currentIp 当前请求IP地址
      * @return true|false
      */
-    public boolean isNotFromSameIp(final long currentIp) {
+    public boolean isNotFromSameIp(long currentIp) {
         return !Long.valueOf(currentIp).equals(this.ip);
     }
 
@@ -167,7 +131,43 @@ public class JwtUserDetails {
      * @param currentDevId 当前请求设备号
      * @return true|false
      */
-    public boolean isNotFromSameDevice(final String currentDevId) {
+    public boolean isNotFromSameDevice(String currentDevId) {
         return !StringUtils.equals(this.devId, currentDevId);
+    }
+
+    /**
+     * 当前登录用户是否来自同一设备请求
+     *
+     * @return true|false
+     */
+    public boolean isC2CFrozen() {
+        return false;
+    }
+
+    /**
+     * 当前登录用户是否来自同一设备请求
+     *
+     * @return true|false
+     */
+    public boolean isContractsFrozen() {
+        return false;
+    }
+
+    /**
+     * 当前登录用户是否来自同一设备请求
+     *
+     * @return true|false
+     */
+    public boolean isSpotFrozen() {
+        return false;
+    }
+
+    /**
+     * 当前登录用户是否来自同一设备请求
+     *
+     * @return true|false
+     */
+    public boolean isAssetFrozen() {
+        return false;
     }
 }

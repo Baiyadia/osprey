@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.security.jwt.model;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/20
  */
 public final class JwtConfig {

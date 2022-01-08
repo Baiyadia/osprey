@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.security.jwt.enums;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2018-07-04
  */
 public enum BizTypeEnum {

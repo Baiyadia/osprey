@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.crypto;
 /**
  * DES 加/解密提供者类
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 public class DesJwtTokenCryptoProvider implements JwtTokenCryptoProvider {

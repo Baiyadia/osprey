@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.exception;
 /**
  * jwt token 过期异常
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/29
  */
 public class SessionExpiredException extends RuntimeException {

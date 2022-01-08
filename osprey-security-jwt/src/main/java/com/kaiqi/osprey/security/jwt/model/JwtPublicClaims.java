@@ -6,19 +6,19 @@ import org.apache.commons.lang3.math.NumberUtils;
 import java.util.Date;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 public class JwtPublicClaims {
 
-    public final static String USER_ID = "uid";
-    public final static String IP = "ip";
-    public final static String DEV_ID = "dev";
-    public final static String STATUS = "sts";
+    public static final String USER_ID = "uid";
+    public static final String IP = "ip";
+    public static final String DEV_ID = "dev";
+    public static final String STATUS = "sts";
 
-    private final Claims claims;
+    private Claims claims;
 
-    public JwtPublicClaims(final Claims claims) {
+    public JwtPublicClaims(Claims claims) {
         this.claims = claims;
     }
 
@@ -26,7 +26,7 @@ public class JwtPublicClaims {
         return this.claims;
     }
 
-    public JwtPublicClaims setId(final String id) {
+    public JwtPublicClaims setId(String id) {
         this.claims.setId(id);
         return this;
     }
@@ -35,7 +35,7 @@ public class JwtPublicClaims {
         return this.claims.getId();
     }
 
-    public JwtPublicClaims setExpiration(final Date date) {
+    public JwtPublicClaims setExpiration(Date date) {
         this.claims.setExpiration(date);
         return this;
     }
@@ -44,7 +44,7 @@ public class JwtPublicClaims {
         return this.claims.getSubject();
     }
 
-    public JwtPublicClaims setUsername(final String username) {
+    public JwtPublicClaims setUsername(String username) {
         this.claims.setSubject(username);
         return this;
     }
@@ -53,7 +53,7 @@ public class JwtPublicClaims {
         return this.claims.getExpiration();
     }
 
-    public JwtPublicClaims setIssuedAt(final Date date) {
+    public JwtPublicClaims setIssuedAt(Date date) {
         this.claims.setIssuedAt(date);
         return this;
     }
@@ -62,7 +62,7 @@ public class JwtPublicClaims {
         return this.claims.getIssuedAt();
     }
 
-    public JwtPublicClaims setIssuer(final String issuer) {
+    public JwtPublicClaims setIssuer(String issuer) {
         this.claims.setIssuer(issuer);
         return this;
     }
@@ -75,7 +75,7 @@ public class JwtPublicClaims {
         return this.claims.get(USER_ID, String.class);
     }
 
-    public JwtPublicClaims setUserId(final String userId) {
+    public JwtPublicClaims setUserId(String userId) {
         this.claims.put(USER_ID, userId);
         return this;
     }
@@ -84,7 +84,7 @@ public class JwtPublicClaims {
         return this.claims.get(IP, String.class);
     }
 
-    public JwtPublicClaims setIp(final String ip) {
+    public JwtPublicClaims setIp(String ip) {
         this.claims.put(IP, ip);
         return this;
     }
@@ -93,7 +93,7 @@ public class JwtPublicClaims {
         return this.claims.get(DEV_ID, String.class);
     }
 
-    public JwtPublicClaims setDevId(final String devId) {
+    public JwtPublicClaims setDevId(String devId) {
         this.claims.put(DEV_ID, devId);
         return this;
     }
@@ -102,7 +102,7 @@ public class JwtPublicClaims {
         return NumberUtils.toInt(String.valueOf(this.claims.get(STATUS)), 0);
     }
 
-    public JwtPublicClaims setStatus(final int status) {
+    public JwtPublicClaims setStatus(int status) {
         this.claims.put(STATUS, status);
         return this;
     }

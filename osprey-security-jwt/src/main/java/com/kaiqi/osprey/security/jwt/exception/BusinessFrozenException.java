@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.security.jwt.exception;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2018-05-04
  */
 public class BusinessFrozenException extends RuntimeException {

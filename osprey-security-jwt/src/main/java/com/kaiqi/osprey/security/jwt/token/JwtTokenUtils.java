@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 @Slf4j
@@ -104,9 +104,6 @@ public class JwtTokenUtils {
         jwtUserDetails.setUsername(session.getUsername());
         jwtUserDetails.setStatus(session.getStatus());
         jwtUserDetails.setFrozen(session.getFrozen());
-        jwtUserDetails.setSpotFrozen(session.getSpotFrozen());
-        jwtUserDetails.setC2cFrozen(session.getC2cFrozen());
-        jwtUserDetails.setContractsFrozen(session.getContractsFrozen());
         return jwtUserDetails;
     }
 
@@ -168,10 +165,6 @@ public class JwtTokenUtils {
                 .username(jwtUserDetails.getUsername())
                 .status(jwtUserDetails.getStatus())
                 .frozen(jwtUserDetails.getFrozen())
-                .spotFrozen(jwtUserDetails.getSpotFrozen())
-                .c2cFrozen(jwtUserDetails.getC2cFrozen())
-                .contractsFrozen(jwtUserDetails.getContractsFrozen())
-                .assetFrozen(jwtUserDetails.getAssetFrozen())
                 .build();
         sessionService.save(token, sessionInfo);
     }

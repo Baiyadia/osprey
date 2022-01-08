@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.exception;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/19
  */
 public class JwtTokenNotFoundException extends AccessDeniedException {

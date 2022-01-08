@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * 全局安全相关异常处理器
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 @Slf4j

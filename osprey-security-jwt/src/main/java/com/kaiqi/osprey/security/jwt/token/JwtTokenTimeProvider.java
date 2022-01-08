@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.token;
 import java.util.Date;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/11/20
  */
 public class JwtTokenTimeProvider {

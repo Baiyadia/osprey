@@ -3,7 +3,7 @@ package com.kaiqi.osprey.security.jwt.enums;
 /**
  * 全站交易业务冻结
  *
- * @author newex-team
+ * @author wangs
  * @date 2018-07-03
  */
 public enum GlobalFrozenEnum {

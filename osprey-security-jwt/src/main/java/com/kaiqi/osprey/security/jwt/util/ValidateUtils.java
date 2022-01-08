@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2018-07-08
  */
 public class ValidateUtils {
