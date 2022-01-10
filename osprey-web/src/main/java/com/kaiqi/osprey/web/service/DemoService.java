@@ -5,6 +5,7 @@ import com.kaiqi.osprey.common.cache.RedisCache;
 import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.service.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -19,25 +20,36 @@ public class DemoService extends BaseService {
     @Resource
     private REDIS redis;
 
+    /**
+     * 配置读取示例
+     *
+     * @author wangs
+     * @date 2022-01-10 14:39
+     */
     public String propertiesDemo() {
-        try {
-            System.out.println("方法执行");
-        } catch (Exception e) {
-            System.out.println("异常处理执行");
-        } finally {
-            System.out.println("finally执行");
-        }
-        System.out.println(appConf.serverConfig());
-        System.out.println(appConf.bourseConfig());
-        return "方法返回值";
+        log.info(JSONObject.toJSONString(appConf.serverConfig()));
+        log.info(JSONObject.toJSONString(appConf.boursesConfig()));
+        return JSONObject.toJSONString(appConf.boursesConfig());
     }
 
+    /**
+     * 数据库操作示例
+     *
+     * @author wangs
+     * @date 2022-01-10 14:39
+     */
     public String jdbcDemo() {
         String result = JSONObject.toJSONString(userService.getAll());
         log.info(result);
         return result;
     }
 
+    /**
+     * redis操作示例
+     *
+     * @author wangs
+     * @date 2022-01-10 14:39
+     */
     public String redisDemo() {
         String result = redis.get("test");
         System.out.println(result);
@@ -49,4 +61,7 @@ public class DemoService extends BaseService {
         return "catchValue";
     }
 
+    public void testDemo(@Value("aaBb") String text) {
+        log.info("text");
+    }
 }

@@ -24,11 +24,17 @@ public class DemoController {
     private DemoService demoService;
 
     @GetMapping(value = "/jdbcDemo/{param1}")
-    ResponseResult index(@PathVariable("param1") Long param1,
-                         @RequestParam(value = "pageNum", required = false, defaultValue = "1") final int pageNum,
-                         @RequestParam(value = "pageSize", required = false, defaultValue = "10") final int pageSize) {
+    ResponseResult jdbcDemo(@PathVariable("param1") Long param1,
+                            @RequestParam(value = "pageNum", required = false, defaultValue = "1") final int pageNum,
+                            @RequestParam(value = "pageSize", required = false, defaultValue = "10") final int pageSize) {
         log.info("param1={}, pageNum={}, pageSize={}", param1, pageNum, pageSize);
         String result = demoService.jdbcDemo();
+        return ResultUtil.success(result);
+    }
+
+    @GetMapping(value = "/propertiesDemo")
+    ResponseResult propertiesDemo() {
+        String result = demoService.propertiesDemo();
         return ResultUtil.success(result);
     }
 

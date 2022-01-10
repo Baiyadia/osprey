@@ -12,7 +12,7 @@ public class AppConfig {
 
     @Bean
     @ConfigurationProperties(prefix = "osprey.bourses")
-    public HashMap<String, HashMap<String, String>> bourseConfig() {
+    public HashMap<String, HashMap<String, String>> boursesConfig() {
         return new HashMap();
     }
 
