@@ -1,4 +1,4 @@
-package com.kaiqi.osprey.web.biz;
+package com.kaiqi.osprey.web.service;
 
 import com.kaiqi.osprey.web.AppConfig;
 

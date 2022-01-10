@@ -1,15 +1,17 @@
-package com.kaiqi.osprey.web.biz;
+package com.kaiqi.osprey.web.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kaiqi.osprey.common.annotation.RedisCache;
+import com.kaiqi.osprey.common.cache.RedisCache;
 import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.service.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+@Slf4j
 @Component
-public class DemoBiz extends BaseService {
+public class DemoService extends BaseService {
 
     @Resource
     private UserService userService;
@@ -17,7 +19,7 @@ public class DemoBiz extends BaseService {
     @Resource
     private REDIS redis;
 
-    public String testGetProperties() {
+    public String propertiesDemo() {
         try {
             System.out.println("方法执行");
         } catch (Exception e) {
@@ -30,19 +32,19 @@ public class DemoBiz extends BaseService {
         return "方法返回值";
     }
 
-    public String testJDBC() {
+    public String jdbcDemo() {
         String result = JSONObject.toJSONString(userService.getAll());
-        System.out.println(result);
+        log.info(result);
         return result;
     }
 
-    public String testRedis() {
+    public String redisDemo() {
         String result = redis.get("test");
         System.out.println(result);
         return result;
     }
 
-    @RedisCache(key = "'testCatch'", timeout = 60)
+    @RedisCache(key = "'testCatch'")
     public String testCatch() {
         return "catchValue";
     }
