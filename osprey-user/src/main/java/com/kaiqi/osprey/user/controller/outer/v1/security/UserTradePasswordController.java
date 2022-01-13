@@ -6,7 +6,7 @@ import com.kaiqi.osprey.common.consts.SwitchConsts;
 import com.kaiqi.osprey.common.session.model.SessionInfo;
 import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.domain.User;
 import com.kaiqi.osprey.service.service.UserService;
 import com.kaiqi.osprey.user.model.WalletPathReqVO;

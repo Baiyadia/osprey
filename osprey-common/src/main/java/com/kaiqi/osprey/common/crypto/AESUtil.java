@@ -30,7 +30,6 @@ public class AESUtil {
     public static String encrypt(final String content, final String key) {
         Validate.notNull(content, "content参数不能为null");
         Validate.notNull(key, "key参数不能为null");
-
         try {
             final byte[] raw = key.getBytes(StandardCharsets.UTF_8);
             final SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
@@ -56,7 +55,6 @@ public class AESUtil {
     public static String decrypt(final String content, final String key) {
         Validate.notNull(content, "content参数不能为null");
         Validate.notNull(key, "key参数不能为null");
-
         try {
             final byte[] raw = key.getBytes(StandardCharsets.UTF_8);
             final SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");

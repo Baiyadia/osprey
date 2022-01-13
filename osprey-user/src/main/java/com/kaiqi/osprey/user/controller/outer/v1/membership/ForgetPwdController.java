@@ -6,7 +6,7 @@ import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
 import com.kaiqi.osprey.common.util.*;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.domain.User;
 import com.kaiqi.osprey.service.service.UserService;
 import com.kaiqi.osprey.user.enums.BusinessTypeEnum;

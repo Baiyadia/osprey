@@ -1,5 +1,8 @@
 package com.kaiqi.osprey.security.jwt.util;
 
+import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
+import org.springframework.util.ObjectUtils;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -11,9 +14,12 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class HttpSessionUtils {
 
-    //TODO session 中获取uid
     public static Long getUserId(HttpServletRequest request) {
-        return 0L;
+        JwtUserDetails userDetails = JwtTokenUtils.getCurrentLoginUser(request);
+        if (ObjectUtils.isEmpty(userDetails) || ObjectUtils.isEmpty(userDetails.getUserId())) {
+            return -1L;
+        }
+        return userDetails.getUserId();
     }
 
 }

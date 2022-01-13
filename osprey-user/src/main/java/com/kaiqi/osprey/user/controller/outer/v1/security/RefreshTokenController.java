@@ -7,7 +7,7 @@ import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.common.util.WebUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
 import com.kaiqi.osprey.security.jwt.token.JwtTokenProvider;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.domain.User;
 import com.kaiqi.osprey.service.domain.UserLoginRecord;
 import com.kaiqi.osprey.service.domain.UserSettings;

@@ -5,7 +5,7 @@ import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.SwitchConsts;
 import com.kaiqi.osprey.common.session.model.SessionInfo;
 import com.kaiqi.osprey.common.util.ResultUtil;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.security.jwt.util.HttpSessionUtils;
 import com.kaiqi.osprey.user.service.UserBizService;
 import lombok.extern.slf4j.Slf4j;

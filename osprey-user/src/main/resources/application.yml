@@ -62,7 +62,7 @@ osprey:
       crypto-key: @osprey.security.jwt.cryptoKey@
       exclude-path-patterns: @osprey.security.jwt.excludePathPatterns@
       validate-ip-and-device: false
-      issuer: coinsafe
+      issuer: osprey
   bourses:
     okcoin:
       name: @osprey.bourses.okcoin.name@

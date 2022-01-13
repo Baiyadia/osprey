@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/coinsafe/inner/users")
+@RequestMapping("/v1/osprey/inner/users")
 public class InnerUserController {
 
     @Autowired

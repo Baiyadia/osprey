@@ -24,19 +24,16 @@ public class RegisterReqVO implements Serializable {
     /**
      * 区域码
      */
-    @NotNull
     private Integer areaCode;
     /**
      * 手机
      */
-    @NotBlank
     @Length(min = 6, max = 20)
     private String mobile;
     /**
      * 邮箱
      */
     @Email
-    @NotBlank
     @Length(min = 6, max = 30)
     private String email;
     /**

@@ -4,10 +4,11 @@ import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.exception.OspreyBizException;
+import com.kaiqi.osprey.common.util.IdWorker;
 import com.kaiqi.osprey.common.util.MobileUtil;
 import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.criteria.UserExample;
 import com.kaiqi.osprey.service.criteria.UserSettingsExample;
 import com.kaiqi.osprey.service.domain.User;
@@ -93,15 +94,14 @@ public class UserBizServiceImpl implements UserBizService {
 
     @Override
     public boolean isNewDevice(String deviceId, Long userId) {
+        if (ObjectUtils.isEmpty(deviceId) || ObjectUtils.isEmpty(userId)) {
+            return true;
+        }
         return ObjectUtils.isEmpty(userLoginRecordService.getByUidDeviceId(userId, deviceId));
     }
 
     @Override
     public ResponseResult register(RegisterReqVO reqVO, WebInfo webInfo, BusinessTypeEnum businessTypeEnum) throws OspreyBizException {
-        User user = User.builder().build();
-        UserSettings settings = UserSettings.builder().build();
-        Date now = new Date();
-
         /**
          * 查邀请用户
          */
@@ -112,55 +112,25 @@ public class UserBizServiceImpl implements UserBizService {
             }
         }
 
-        if (BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE.getType().equals(businessTypeEnum.getType())) {
-            user.setMobile(reqVO.getMobile());
-            user.setRegisterType(BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE.getType());
-            settings.setMobileAuthFlag(UserStatusEnum.USER_MOBILE_SETTING_STATUS_OK.getStatus());
-            settings.setEmailAuthFlag(UserStatusEnum.USER_EMAIL_SETTING_STATUS_NO.getStatus());
-            user.setNickname(MobileUtil.getScreenPhoneNumber(reqVO.getMobile()));
-        } else {
-            user.setEmail(reqVO.getEmail());
-            user.setRegisterType(BusinessTypeEnum.USER_REGISTER_TYPE_EMAIL.getType());
-            settings.setMobileAuthFlag(UserStatusEnum.USER_MOBILE_SETTING_STATUS_NO.getStatus());
-            settings.setEmailAuthFlag(UserStatusEnum.USER_EMAIL_SETTING_STATUS_OK.getStatus());
-            user.setNickname(MobileUtil.getScreenEmailNumber(reqVO.getEmail()));
-        }
-        user.setPassword(passwordEncoder.encode(reqVO.getPassword()));
-        user.setAntiPhishingCode(NicknameUtil.antiPhishingCode());
-        user.setAreaCode(reqVO.getAreaCode());
-        user.setRegIp(webInfo.getIpAddress());
-        user.setOpenId(String.valueOf(NicknameUtil.getOpenId()));
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
-        user.setParentId(0L);
-        user.setStatus(UserStatusEnum.USER_STATUS_NORMAL.getStatus());
-        user.setTradePassUpdate(now);
-        //setting
-        settings.setLoginAuthFlag(UserStatusEnum.USER_LOGIN_AUTH_FLAG_NO.getStatus());
-        settings.setGoogleAuthFlag(UserStatusEnum.USER_GOOGLE_SETTING_STATUS_NO.getStatus());
-        settings.setLoginPwdStrength(UserStatusEnum.USER_PWD_STRENGTH_OK.getStatus());
-        settings.setProtocolAuthFlag(UserStatusEnum.USER_REJECT_PROTOCOL.getStatus());
-        settings.setSubNotifyFlag(UserStatusEnum.USER_SUBNOTIFY_FLAG_NO.getStatus());
-        settings.setTradePasswordSetFlag(UserStatusEnum.USER_TRADE_PASSWORD_NO_SET.getStatus());
-        settings.setCreateTime(now);
-        settings.setUpdateTime(now);
+        /**
+         * 持久化user、settings
+         */
+        User user = genNewUser(reqVO, webInfo, businessTypeEnum);
+        UserSettings settings = genDefaultSettings(user.getUserId(), businessTypeEnum);
         try {
             userService.add(user);
-            settings.setUserId(user.getUserId());
             userSettingsService.add(settings);
             log.info("register reqVO {}  userId {} success", reqVO, user.getUserId());
         } catch (Exception e) {
             log.info("register reqVO:{} failure {}", reqVO, e);
             throw new OspreyBizException(ErrorCodeEnum.REGISTER_SAVE_FAILED);
         }
-        if (user.getUserId() <= 0) {
-            log.error("mobile register failure! user id < 0 and userId={}", user.getUserId());
-            throw new OspreyBizException(ErrorCodeEnum.REGISTER_SAVE_FAILED);
-        }
-        //生成jwt 颁发令牌
+
+        /**
+         * 生成jwt 颁发令牌
+         */
         UserDetails userDetails = genUserDetails(user, settings, webInfo);
         JwtUserDetails jwtUserDetails = jwtTokenService.createJwtUserDetails(userDetails);
-
         UserProfileVO profile = UserProfileVO.builder()
                                              .openId(user.getOpenId())
                                              .email(user.getEmail())
@@ -174,15 +144,75 @@ public class UserBizServiceImpl implements UserBizService {
 //                                             .isAddressVisible(settings.getIsAddressVisible())
                                              .contactCount(user.getContactCount())
                                              .build();
-
         AccessTokenResVO token = AccessTokenResVO.builder()
                                                  .accessToken(JwtTokenUtils.generateTokenAndCreateSession(jwtUserDetails, webInfo))
                                                  .refreshToken("")
                                                  .profile(profile)
                                                  .build();
-        //安全记录
+        /**
+         * 安全记录
+         */
         operatorFacadeService.recordLoginEvent(token.getAccessToken(), userDetails, BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE, webInfo);
         return ResultUtil.success(token);
+    }
+
+    /**
+     * 新用户构建
+     */
+    private User genNewUser(RegisterReqVO reqVO, WebInfo webInfo, BusinessTypeEnum businessTypeEnum) {
+        Date now = new Date();
+        User user = User.builder()
+                        .userId(IdWorker.nextId())
+//                        .password(passwordEncoder.encode(reqVO.getPassword()))
+                        .parentId(0L)
+                        .password(reqVO.getPassword())
+                        .antiPhishingCode(NicknameUtil.antiPhishingCode())
+                        .areaCode(reqVO.getAreaCode())
+                        .regIp(webInfo.getIpAddress())
+                        .openId(String.valueOf(NicknameUtil.getOpenId()))
+                        .createTime(now)
+                        .updateTime(now)
+                        .tradePassUpdate(now)
+                        .contactCount(0)
+                        .status(UserStatusEnum.USER_STATUS_NORMAL.getStatus())
+                        .build();
+        if (BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE.getType().equals(businessTypeEnum.getType())) {
+            user.setMobile(reqVO.getMobile());
+            user.setRegisterType(BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE.getType());
+            user.setNickname(MobileUtil.getScreenPhoneNumber(reqVO.getMobile()));
+        } else {
+            user.setEmail(reqVO.getEmail());
+            user.setRegisterType(BusinessTypeEnum.USER_REGISTER_TYPE_EMAIL.getType());
+            user.setNickname(MobileUtil.getScreenEmailNumber(reqVO.getEmail()));
+        }
+        return user;
+    }
+
+    /**
+     * 默认配置构建
+     */
+    private UserSettings genDefaultSettings(Long userId, BusinessTypeEnum businessTypeEnum) {
+        Date now = new Date();
+        UserSettings settings = UserSettings
+                .builder()
+                .userId(userId)
+                .loginAuthFlag(UserStatusEnum.USER_LOGIN_AUTH_FLAG_NO.getStatus())
+                .googleAuthFlag(UserStatusEnum.USER_GOOGLE_SETTING_STATUS_NO.getStatus())
+                .loginPwdStrength(UserStatusEnum.USER_PWD_STRENGTH_OK.getStatus())
+                .protocolAuthFlag(UserStatusEnum.USER_REJECT_PROTOCOL.getStatus())
+                .subNotifyFlag(UserStatusEnum.USER_SUBNOTIFY_FLAG_NO.getStatus())
+                .tradePasswordSetFlag(UserStatusEnum.USER_TRADE_PASSWORD_NO_SET.getStatus())
+                .createTime(now)
+                .updateTime(now)
+                .build();
+        if (BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE.getType().equals(businessTypeEnum.getType())) {
+            settings.setMobileAuthFlag(UserStatusEnum.USER_MOBILE_SETTING_STATUS_OK.getStatus());
+            settings.setEmailAuthFlag(UserStatusEnum.USER_EMAIL_SETTING_STATUS_NO.getStatus());
+        } else {
+            settings.setMobileAuthFlag(UserStatusEnum.USER_MOBILE_SETTING_STATUS_NO.getStatus());
+            settings.setEmailAuthFlag(UserStatusEnum.USER_EMAIL_SETTING_STATUS_OK.getStatus());
+        }
+        return settings;
     }
 
     /**

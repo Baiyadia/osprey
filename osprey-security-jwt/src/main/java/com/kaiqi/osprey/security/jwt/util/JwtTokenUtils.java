@@ -1,4 +1,4 @@
-package com.kaiqi.osprey.security.jwt.token;
+package com.kaiqi.osprey.security.jwt.util;
 
 import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.consts.WebConsts;
@@ -7,6 +7,7 @@ import com.kaiqi.osprey.common.session.service.SessionService;
 import com.kaiqi.osprey.common.util.IpUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtConsts;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
+import com.kaiqi.osprey.security.jwt.token.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,35 +30,6 @@ public class JwtTokenUtils {
     public JwtTokenUtils(JwtTokenProvider jwtTokenProvider, SessionService<SessionInfo> sessionService) {
         JwtTokenUtils.jwtTokenProvider = jwtTokenProvider;
         JwtTokenUtils.sessionService = sessionService;
-    }
-
-    /**
-     * 获取与登录会话有关的全局冻结业务变量
-     *
-     * @param key 缓存key名称
-     * @return 状态值
-     */
-    public static Integer getGlobalFrozenStatus(String key) {
-        return sessionService.getGlobalStatus(key);
-    }
-
-    /**
-     * 设置与登录会话有关的全局冻结业务变量
-     *
-     * @param key    缓存key名称
-     * @param status 状态值
-     */
-    public static void setGlobalFrozenStatus(String key, Integer status) {
-        sessionService.setGlobalStatus(key, status);
-    }
-
-    /**
-     * 删除登录会话有关的全局冻结业务变量
-     *
-     * @param key 缓存key名称
-     */
-    public static void removeGlobalFrozenStatus(String key) {
-        sessionService.deleteGlobalStatus(key);
     }
 
     /**
@@ -110,34 +82,16 @@ public class JwtTokenUtils {
     }
 
     /**
-     * 清除登录会话记录
+     * 生成jwt token 并 创建登录session记录
      *
-     * @param request http request
+     * @param jwtUserDetails {@link JwtUserDetails}
+     * @param wenInfo        http request
+     * @return access token
      */
-    public static void clearSession(HttpServletRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(WebConsts.JWT_CURRENT_USER);
-        if (jwtUserDetails != null) {
-            sessionService.remove(jwtUserDetails.getUserId());
-        }
-    }
-
-    /**
-     * 清除登录会话记录
-     *
-     * @param userId 登录用户id
-     */
-    public static void clearSession(long userId) {
-        sessionService.remove(userId);
-    }
-
-    /**
-     * 根据用户ID获取当前用户登录会话信息
-     *
-     * @param userId 用户id
-     * @return {@link SessionInfo}
-     */
-    public static SessionInfo getSession(long userId) {
-        return sessionService.getByUserId(userId);
+    public static String generateTokenAndCreateSession(JwtUserDetails jwtUserDetails, WebInfo wenInfo) {
+        String accessToken = generateToken(jwtUserDetails, wenInfo);
+        createSession(jwtUserDetails, accessToken);
+        return accessToken;
     }
 
     /**
@@ -171,19 +125,6 @@ public class JwtTokenUtils {
     }
 
     /**
-     * 生成jwt token 并 创建登录session记录
-     *
-     * @param jwtUserDetails {@link JwtUserDetails}
-     * @param wenInfo        http request
-     * @return access token
-     */
-    public static String generateTokenAndCreateSession(JwtUserDetails jwtUserDetails, WebInfo wenInfo) {
-        String accessToken = generateToken(jwtUserDetails, wenInfo);
-        createSession(jwtUserDetails, accessToken);
-        return accessToken;
-    }
-
-    /**
      * 更新用户登录会话状态
      *
      * @param newSession {@link SessionInfo}
@@ -191,4 +132,65 @@ public class JwtTokenUtils {
     public static void updateSession(SessionInfo newSession) {
         sessionService.updateByUserId(newSession);
     }
+
+    /**
+     * 清除登录会话记录
+     *
+     * @param request http request
+     */
+    public static void clearSession(HttpServletRequest request) {
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(WebConsts.JWT_CURRENT_USER);
+        if (jwtUserDetails != null) {
+            sessionService.remove(jwtUserDetails.getUserId());
+        }
+    }
+
+    /**
+     * 清除登录会话记录
+     *
+     * @param userId 登录用户id
+     */
+    public static void clearSession(long userId) {
+        sessionService.remove(userId);
+    }
+
+    /**
+     * 根据用户ID获取当前用户登录会话信息
+     *
+     * @param userId 用户id
+     * @return {@link SessionInfo}
+     */
+    public static SessionInfo getSession(long userId) {
+        return sessionService.getByUserId(userId);
+    }
+
+    /**
+     * 获取与登录会话有关的全局冻结业务变量
+     *
+     * @param key 缓存key名称
+     * @return 状态值
+     */
+    public static Integer getGlobalFrozenStatus(String key) {
+        return sessionService.getGlobalStatus(key);
+    }
+
+    /**
+     * 设置与登录会话有关的全局冻结业务变量
+     *
+     * @param key    缓存key名称
+     * @param status 状态值
+     */
+    public static void setGlobalFrozenStatus(String key, Integer status) {
+        sessionService.setGlobalStatus(key, status);
+    }
+
+    /**
+     * 删除登录会话有关的全局冻结业务变量
+     *
+     * @param key 缓存key名称
+     */
+    public static void removeGlobalFrozenStatus(String key) {
+        sessionService.deleteGlobalStatus(key);
+    }
+
 }

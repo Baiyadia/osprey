@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
-import java.util.Optional;
 
 /**
  * @author wangs
@@ -32,40 +31,25 @@ public class CheckCodeServiceImpl implements CheckCodeService {
 
     @Override
     public ResponseResult<?> checkMobileCode(long userId, String loginName, String verificationCode, BusinessTypeEnum businessTypeEnum) {
-        UserNoticeRecordExample example = new UserNoticeRecordExample();
-        UserNoticeRecordExample.Criteria criteria = example.createCriteria();
-        criteria.andUserIdEqualTo(userId)
-                .andNoticeTypeEqualTo(businessTypeEnum.getType())
-                .andChannelEqualTo(NoticeSendLogConsts.NOTICE_TYPE_PHONE)
-                .andStatusEqualTo(NoticeSendLogConsts.STATUS_NEW);
-        if (!StringUtils.isEmpty(loginName)) {
-            criteria.andTargetEqualTo(loginName);
-        }
-        example.setOrderByClause(" id desc ");
-        Optional<UserNoticeRecord> userNoticeRecordOptional = noticeRecordService.getByExample(example).stream().findFirst();
-        if (!userNoticeRecordOptional.isPresent()) {
-            log.error("checkMobileCode: userId: {} loginName: {} behavior: {} checkCode: {} ", userId, loginName, businessTypeEnum.getType(),
-                    verificationCode);
-            return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_VERIFY_ERROR);
-        }
-        UserNoticeRecord userNoticeRecord = userNoticeRecordOptional.get();
-        if (StringUtil.notEquals(verificationCode, JSON.parseObject(userNoticeRecord.getParams()).getString("code"))) {
+        UserNoticeRecord userNoticeRecord = noticeRecordService.getLatestRecord(userId, loginName, NoticeSendLogConsts.NOTICE_TYPE_PHONE, businessTypeEnum.getType());
+        // 校验正确性
+        if (ObjectUtils.isEmpty(userNoticeRecord)
+                || StringUtil.notEquals(verificationCode, JSON.parseObject(userNoticeRecord.getParams()).getString("code"))) {
             return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_VERIFY_ERROR);
         }
 
-        UserNoticeRecord update = new UserNoticeRecord();
-        //校验有效期
+        UserNoticeRecord updateBean = new UserNoticeRecord();
+        // 校验有效期
         if (new Date().after(userNoticeRecord.getExpireTime())) {
-            update.setId(userNoticeRecord.getId());
-            update.setStatus(NoticeSendLogConsts.STATUS_OVERDUE);
-
-            noticeRecordService.editById(update);
+            updateBean.setId(userNoticeRecord.getId());
+            updateBean.setStatus(NoticeSendLogConsts.STATUS_OVERDUE);
+            noticeRecordService.editById(updateBean);
             return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_VERIFY_ERROR);
         }
 
-        update.setId(userNoticeRecord.getId());
-        update.setStatus(NoticeSendLogConsts.STATUS_USED);
-        long effect = noticeRecordService.editById(update);
+        updateBean.setId(userNoticeRecord.getId());
+        updateBean.setStatus(NoticeSendLogConsts.STATUS_USED);
+        long effect = noticeRecordService.editById(updateBean);
         if (effect <= 0) {
             return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_VERIFY_ERROR);
         }

@@ -89,7 +89,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
             log.info("send sms code is {}", randNumber);
             params.put("code", randNumber);
             userNoticeRecord = new UserNoticeRecord();
-            userNoticeRecord.setToken(EmailTokenUtils.createEmailToken(userId, businessTypeEnum.getType(), -1));
+            userNoticeRecord.setToken(EmailTokenUtils.createEmailTokenMD5(userId, businessTypeEnum.getType(), -1));
             userNoticeRecord.setStatus(NoticeSendLogConsts.STATUS_NEW);
             userNoticeRecord.setChannel(NoticeSendLogConsts.NOTICE_TYPE_PHONE);
             userNoticeRecord.setTarget(target);
@@ -106,7 +106,6 @@ public class UserNoticeServiceImpl implements UserNoticeService {
                 log.error("MessageSendService sendSMS, save noticeSendLog falied!");
                 return false;
             }
-
         }
 
 //        //TODO 模板id
@@ -160,7 +159,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
             }
 
             userNoticeRecord = new UserNoticeRecord();
-            userNoticeRecord.setToken(EmailTokenUtils.createEmailToken(userId, businessTypeEnum.getType(), 30));
+            userNoticeRecord.setToken(EmailTokenUtils.createEmailTokenMD5(userId, businessTypeEnum.getType(), 30));
             userNoticeRecord.setStatus(NoticeSendLogConsts.STATUS_NEW);
             userNoticeRecord.setChannel(NoticeSendLogConsts.NOTICE_TYPE_EMAIL);
             userNoticeRecord.setTarget(email);

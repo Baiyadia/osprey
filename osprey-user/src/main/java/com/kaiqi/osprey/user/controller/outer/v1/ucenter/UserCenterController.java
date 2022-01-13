@@ -11,7 +11,7 @@ import com.kaiqi.osprey.common.session.model.SessionInfo;
 import com.kaiqi.osprey.common.session.model.UserProfile;
 import com.kaiqi.osprey.common.util.*;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.criteria.UserExample;
 import com.kaiqi.osprey.service.criteria.UserFeedbackExample;
 import com.kaiqi.osprey.service.criteria.UserSettingsExample;
@@ -42,7 +42,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/coinsafe/users")
+@RequestMapping("/v1/osprey/users")
 public class UserCenterController {
 
     @Autowired

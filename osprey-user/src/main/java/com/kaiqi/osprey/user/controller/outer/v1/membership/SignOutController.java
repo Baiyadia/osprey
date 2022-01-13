@@ -3,7 +3,7 @@ package com.kaiqi.osprey.user.controller.outer.v1.membership;
 import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.util.ResultUtil;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

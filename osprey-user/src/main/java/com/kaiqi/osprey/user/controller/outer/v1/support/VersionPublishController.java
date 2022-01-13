@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/v1/coinsafe/users/support/public")
+@RequestMapping("/v1/osprey/users/support/public")
 public class VersionPublishController {
 
     @Autowired

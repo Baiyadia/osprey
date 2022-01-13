@@ -12,4 +12,6 @@ import com.kaiqi.osprey.service.domain.UserNoticeRecord;
  */
 public interface UserNoticeRecordService extends CrudService<UserNoticeRecord, UserNoticeRecordExample, Long> {
 
+    UserNoticeRecord getLatestRecord(Long userId, String loginName, Integer Channel, Integer noticeType);
+
 }

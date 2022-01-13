@@ -3,6 +3,7 @@ package com.kaiqi.osprey.user.service.impl;
 import com.google.common.collect.Maps;
 import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
+import com.kaiqi.osprey.common.util.MD5Util;
 import com.kaiqi.osprey.service.domain.UserLoginRecord;
 import com.kaiqi.osprey.service.service.UserLoginRecordService;
 import com.kaiqi.osprey.user.domain.UserDetails;
@@ -67,7 +68,7 @@ public class OperatorFacadeServiceImpl implements OperatorFacadeService {
         UserLoginRecord loginRecord = UserLoginRecord
                 .builder()
                 .userId(userDetails.getUserId())
-                .token(token)
+                .token(MD5Util.getMD5String(token))
                 .deviceId(webInfo.getDeviceId())
                 .ipAddress(webInfo.getIpAddress())
                 .region("")

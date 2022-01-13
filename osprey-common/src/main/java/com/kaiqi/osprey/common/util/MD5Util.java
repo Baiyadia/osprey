@@ -78,16 +78,6 @@ public class MD5Util {
     }
 
     /**
-     * MD5加密字符串
-     *
-     * @param str 目标字符串
-     * @return MD5加密后的字符串
-     */
-    public static String getMD5String(String str) {
-        return getMD5String(str.getBytes());
-    }
-
-    /**
      * MD5加密以byte数组表示的字符串
      *
      * @param bytes 目标byte数组
@@ -103,6 +93,16 @@ public class MD5Util {
         }
         return "";
 
+    }
+
+    /**
+     * MD5加密字符串
+     *
+     * @param str 目标字符串
+     * @return MD5加密后的字符串
+     */
+    public static String getMD5String(String str) {
+        return getMD5String(str.getBytes());
     }
 
     /**

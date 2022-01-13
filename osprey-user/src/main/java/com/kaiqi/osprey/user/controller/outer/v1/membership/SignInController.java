@@ -8,7 +8,7 @@ import com.kaiqi.osprey.common.consts.RedisConsts;
 import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.common.util.*;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
-import com.kaiqi.osprey.security.jwt.token.JwtTokenUtils;
+import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.security.jwt.util.HttpSessionUtils;
 import com.kaiqi.osprey.service.domain.User;
 import com.kaiqi.osprey.service.domain.UserLoginRecord;
@@ -122,7 +122,8 @@ public class SignInController {
                 }
             }
 
-            if (!passwordEncoder.matches(reqVO.getPassword(), user.getPassword())) {
+//            if (!passwordEncoder.matches(reqVO.getPassword(), user.getPassword())) {
+            if (!StringUtils.equals(reqVO.getPassword(), user.getPassword())) {
                 if (!StringUtils.isEmpty(reqVO.getSerialNO())) {
                     appCacheService.deleteImageVerificationCode(reqVO.getSerialNO());
                 }
