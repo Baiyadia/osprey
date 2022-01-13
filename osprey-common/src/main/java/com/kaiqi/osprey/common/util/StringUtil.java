@@ -132,4 +132,24 @@ public class StringUtil {
     public static boolean notEqualsWithTrim(String str1, String str2) {
         return notEquals(StringUtils.trim(str1), StringUtils.trim(str2));
     }
+
+    /**
+     * 手机加*
+     *
+     * @param
+     * @return
+     */
+    public static String getStarMobile(String realMobile) {
+        return realMobile;
+    }
+
+    /**
+     * 邮箱加*
+     *
+     * @param
+     * @return
+     */
+    public static String getStarEmail(String realMobile) {
+        return realMobile;
+    }
 }

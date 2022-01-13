@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!--多环境配置下，通过 application.yml 传递参数过来，property标签 取不到环境参数，需要用springProperty标签 -->
+    <springProperty scope="context" name="logging.path" source="logging.path"/>
+    <springProperty scope="context" name="logging.level.default" source="logging.level.default"/>
+    <springProperty scope="context" name="logging.level.mybatis" source="logging.level.mybatis"/>
+    <springProperty scope="context" name="logging.level.commons" source="logging.level.commons"/>
+    <springProperty scope="context" name="osprey.app.env.name" source="osprey.app.env.name"/>
+
+    <!-- appender：用来格式化日志输出节点，有两个属性name和class，class用来指定哪种输出策略，常用就是控制台输出策略和文件输出策略 -->
+    <!-- RollingFileAppender：是FileAppender的子类。到满足一定的条件就会创建一个新的文件，然后将日志写入到新的文件中 -->
+    <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- file：被写入的文件名，可以是相对目录，也可以是绝对目录 -->
+        <file>${logging.path}/info.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- TimeBasedRollingPolicy：它根据时间来制定滚动策略，时间滚动策略可以基于时间滚动按时间生成日志 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logging.path}/info.%d{yyyy-MM-dd}.%i.zip</fileNamePattern>
+            <!-- maxFileSize：设置日志文件大小，超过500MB就重新生成文件-->
+            <maxFileSize>500MB</maxFileSize>
+            <!-- maxHistory：以异步方式删除较旧的文件，保留30天日志 -->
+            <maxHistory>30</maxHistory>
+            <!-- totalSizeCap：所有日志文件的总大小空间，当日志文件的空间超过了设置的最大空间数量就会删除旧的文件。这个标签必须和maxHistory标签一起使用 -->
+            <totalSizeCap>30GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 定义error日志的输出规则 -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logging.path}/error.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- logback允许给日志记录器appender配置一个或多个Filter(或者给整体配置一个或多个TurboFilter)，来控制:当满足过滤器指定的条件时，才记录日志(或不满足条件时，拒绝记录日志) -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logging.path}/error.%d{yyyy-MM-dd}.%i.zip</fileNamePattern>
+            <maxFileSize>500MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>30GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 定义控制台日志的输出规则 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <appender name="ASYNC_FILE_ALL" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="FILE_ALL"/>
+    </appender>
+
+    <appender name="ASYNC_FILE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="FILE_ERROR"/>
+    </appender>
+
+    <!-- logger：用来设置某一个包或者具体的某一个类的日志打印级别、以及指定appender -->
+    <logger name="org.mybatis" level="${logging.level.mybatis}"/>
+    <logger name="com.kaiqi.osprey" level="${logging.level.commons}"/>
+
+    <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。level默认是DEBUG -->
+    <root level="${logging.level.default}">
+        <appender-ref ref="ASYNC_FILE_ALL"/>
+        <appender-ref ref="ASYNC_FILE_ERROR"/>
+        <if condition='"${osprey.app.env.name}".equals("dev")'>
+            <then>
+                <appender-ref ref="STDOUT"/>
+            </then>
+        </if>
+    </root>
+</configuration>

@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * AES加解密算法工具类
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 public class AESUtil {

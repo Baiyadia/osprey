@@ -1,14 +1,16 @@
 package com.kaiqi.osprey.security.jwt;
 
 import com.kaiqi.osprey.common.consts.AppEnvConsts;
-import com.kaiqi.osprey.common.ucenter.model.SessionInfo;
-import com.kaiqi.osprey.common.ucenter.service.SessionService;
+import com.kaiqi.osprey.common.consts.WebConsts;
+import com.kaiqi.osprey.common.session.model.SessionInfo;
+import com.kaiqi.osprey.common.session.service.SessionService;
+import com.kaiqi.osprey.common.util.IpUtil;
+import com.kaiqi.osprey.common.util.WebUtil;
 import com.kaiqi.osprey.security.jwt.exception.*;
 import com.kaiqi.osprey.security.jwt.model.JwtConsts;
 import com.kaiqi.osprey.security.jwt.model.JwtPublicClaims;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
 import com.kaiqi.osprey.security.jwt.token.JwtTokenProvider;
-import com.kaiqi.osprey.security.jwt.util.ValidateUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +51,7 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
                 throw new JwtTokenNotFoundException();
             }
             //非生产环境方便调试支持从cookie中读取token
-            Cookie tokenCookie = WebUtils.getCookie(request, JwtConsts.TOKEN);
+            Cookie tokenCookie = WebUtils.getCookie(request, WebConsts.TOKEN);
             if (tokenCookie == null || StringUtils.isBlank(tokenCookie.getValue())) {
                 throw new JwtTokenNotFoundException();
             }
@@ -76,8 +78,8 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
             throw new JwtTokenInvalidException(ex.getMessage(), ex);
         }
 
-        request.setAttribute(JwtConsts.JWT_CURRENT_USER, jwtUserDetails);
-        request.setAttribute(JwtConsts.JWT_CURRENT_USER_ID, jwtUserDetails.getUserId());
+        request.setAttribute(WebConsts.JWT_CURRENT_USER, jwtUserDetails);
+        request.setAttribute(WebConsts.JWT_CURRENT_USER_ID, jwtUserDetails.getUserId());
         return super.preHandle(request, response, handler);
     }
 
@@ -101,8 +103,8 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
         //非正常访问
         if (this.jwtTokenProvider.verifyIpAndDevice(
                 jwtUserDetails,
-                ValidateUtils.getDeviceId(request),
-                ValidateUtils.getRequestIP(request))
+                WebUtil.getDeviceId(request),
+                IpUtil.toLong(IpUtil.getRealIPAddress(request)))
         ) {
             throw new AbnormalAccessException();
         }

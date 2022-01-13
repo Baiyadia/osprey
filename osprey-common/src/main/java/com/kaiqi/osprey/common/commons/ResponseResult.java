@@ -33,4 +33,12 @@ public class ResponseResult<T> implements Serializable {
      * 返回数据
      */
     private T data;
+
+    public boolean isSuccess() {
+        return this.code == 0;
+    }
+
+    public boolean isFail() {
+        return this.code != 0;
+    }
 }

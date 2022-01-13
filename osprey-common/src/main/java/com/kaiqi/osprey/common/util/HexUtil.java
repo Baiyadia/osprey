@@ -6,7 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.Validate;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 @Slf4j

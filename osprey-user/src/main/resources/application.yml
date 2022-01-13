@@ -1,0 +1,75 @@
+#
+# tomcat server
+#
+server:
+  port: @server.port@
+#
+# spring
+#
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url:  @spring.datasource.url@
+    username: @spring.datasource.username@
+    password: @spring.datasource.password@
+    max-active: 10
+    min-idle: 0
+  redis:
+    host: @spring.redis.host@
+    port: @spring.redis.port@
+    timeout: @spring.redis.timeout@
+#    password: @spring.redis.password@
+    lettuce:
+      pool:
+        max-active: @spring.redis.pool.max-active@
+        max-idle: @spring.redis.pool.max-idle@
+        max-wait: @spring.redis.pool.max-wait@
+        min-idle: @spring.redis.pool.min-idle@
+#
+# mybatis
+#
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+#
+# logging
+#
+logging:
+  config: @logging.config@
+  path: @logging.path@
+  level:
+    default: @logging.level.default@
+    commons: @logging.level.commons@
+    mybatis: @logging.level.mybatis@
+#
+# osprey
+#
+osprey:
+  app:
+    name: @osprey.app.name@
+    version: @osprey.app.version@
+    domain: @osprey.app.domain@
+    env:
+      name: @osprey.app.env.name@
+  security:
+    csrf:
+      referer-pattern: @osprey.security.csrf.refererPattern@
+      exclude-path-patterns: @osprey.security.csrf.excludePathPatterns@
+    xss:
+      url-patterns: @osprey.security.xss.urlPatterns@
+    jwt:
+      secret: @osprey.security.jwt.secret@
+      crypto-key: @osprey.security.jwt.cryptoKey@
+      exclude-path-patterns: @osprey.security.jwt.excludePathPatterns@
+      validate-ip-and-device: false
+      issuer: coinsafe
+  bourses:
+    okcoin:
+      name: @osprey.bourses.okcoin.name@
+      url: @osprey.bourses.okcoin.url@
+    huobi:
+      name: @osprey.bourses.huobi.name@
+      url: @osprey.bourses.huobi.url@
+data:
+  address: @data.address@
+  port: @data.port@

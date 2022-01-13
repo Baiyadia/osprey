@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 @Order(1)
 @RestControllerAdvice
 @ConditionalOnProperty(
-        prefix = "newex.security.jwt.exception-advice", name = "enabled", matchIfMissing = true
+        prefix = "osprey.security.jwt.exception-advice", name = "enabled", matchIfMissing = true
 )
 public class JwtSecurityExceptionAdvice {
 

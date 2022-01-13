@@ -3,7 +3,7 @@ package com.kaiqi.osprey.common.consts;
 /**
  * 用户鉴权相关常量
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 public class UserAuthConsts {

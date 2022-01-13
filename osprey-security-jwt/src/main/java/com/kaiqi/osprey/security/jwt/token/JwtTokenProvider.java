@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import java.util.function.Function;
  * @date 2017/12/19
  */
 @Slf4j
+@Component
 public class JwtTokenProvider {
 
     private JwtConfig jwtConfig;

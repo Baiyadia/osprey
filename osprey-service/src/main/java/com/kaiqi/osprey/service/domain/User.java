@@ -31,7 +31,7 @@ public class User {
     /**
      * 公共用户id
      */
-    private Long openId;
+    private String openId;
 
     /**
      * 账号所属的主账号id 0标识是主账号

@@ -38,7 +38,7 @@ public class DemoServiceTest extends AbstractTest {
 
     @Test
     public void testRedis() {
-        String result = demoService.redisDemo();
+        String result = demoService.redisDemo("name");
         Assert.assertNotNull(result);
     }
 

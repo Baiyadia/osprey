@@ -42,6 +42,10 @@
             <artifactId>spring-web</artifactId>
             <version>5.1.6.RELEASE</version>
         </dependency>
-
     </dependencies>
+
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
+
 </project>

@@ -1,10 +1,10 @@
 package com.kaiqi.osprey.security.jwt;
 
-import com.kaiqi.osprey.common.ucenter.service.SessionService;
+import com.kaiqi.osprey.common.consts.WebConsts;
+import com.kaiqi.osprey.common.session.service.SessionService;
 import com.kaiqi.osprey.security.jwt.enums.BizTypeEnum;
 import com.kaiqi.osprey.security.jwt.enums.GlobalFrozenEnum;
 import com.kaiqi.osprey.security.jwt.exception.BusinessFrozenException;
-import com.kaiqi.osprey.security.jwt.model.JwtConsts;
 import com.kaiqi.osprey.security.jwt.model.JwtFrozenConfig;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class JwtFrozenInterceptor extends HandlerInterceptorAdapter {
     }
 
     private void validateFrozen(HttpServletRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(WebConsts.JWT_CURRENT_USER);
         if (jwtUserDetails == null ||
                 this.isGlobalFrozen(GlobalFrozenEnum.GLOBAL_FROZEN.getName()) ||
                 jwtUserDetails.isFrozen() ||

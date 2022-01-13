@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.common.commons.enums;
 
 /**
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 public interface ErrorCode {

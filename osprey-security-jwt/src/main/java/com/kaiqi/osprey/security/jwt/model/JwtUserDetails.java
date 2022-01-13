@@ -68,10 +68,10 @@ public class JwtUserDetails {
      */
     private Integer frozen;
 
-//    /**
-//     * 是否同意了协议 0不同意 1同意
-//     */
-//    private Integer protocolAuthFlag;
+    /**
+     * 是否同意了协议 0不同意 1同意
+     */
+    private Integer protocolAuthFlag;
 
     /**
      * 是否设置了交易密码 0未设置 1已设置

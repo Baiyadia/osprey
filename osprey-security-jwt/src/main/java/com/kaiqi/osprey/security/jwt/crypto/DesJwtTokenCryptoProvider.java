@@ -9,12 +9,12 @@ package com.kaiqi.osprey.security.jwt.crypto;
 public class DesJwtTokenCryptoProvider implements JwtTokenCryptoProvider {
 
     @Override
-    public String encrypt(final String content, final String key) {
+    public String encrypt(String content, String key) {
         return null;
     }
 
     @Override
-    public String decrypt(final String content, final String key) {
+    public String decrypt(String content, String key) {
         return null;
     }
 }

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 应用环境常量
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  **/
 public class AppEnvConsts {

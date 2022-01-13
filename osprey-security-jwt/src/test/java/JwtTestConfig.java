@@ -20,13 +20,13 @@ public class JwtTestConfig {
 
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
-        final JwtConfig jwtConfig = new JwtConfig();
-        jwtConfig.setCryptoKey(this.jwtProperties.getCryptoKey());
-        jwtConfig.setIssuer(this.jwtProperties.getIssuer());
-        jwtConfig.setSecret(this.jwtProperties.getSecret());
-        jwtConfig.setExpiration(this.jwtProperties.getExpiration());
+        JwtConfig jwtConfig = new JwtConfig();
+        jwtConfig.setCryptoKey(jwtProperties.getCryptoKey());
+        jwtConfig.setIssuer(jwtProperties.getIssuer());
+        jwtConfig.setSecret(jwtProperties.getSecret());
+        jwtConfig.setExpiration(jwtProperties.getExpiration());
 
-        final JwtTokenCryptoProvider cryptoProvider = new AesJwtTokenCryptoProvider();
+        JwtTokenCryptoProvider cryptoProvider = new AesJwtTokenCryptoProvider();
         return new JwtTokenProvider(jwtConfig, cryptoProvider);
     }
 }

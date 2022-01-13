@@ -16,7 +16,6 @@ public class DemoService extends BaseService {
 
     @Resource
     private UserService userService;
-
     @Resource
     private REDIS redis;
 
@@ -50,8 +49,8 @@ public class DemoService extends BaseService {
      * @author wangs
      * @date 2022-01-10 14:39
      */
-    public String redisDemo() {
-        String result = redis.get("test");
+    public String redisDemo(String key) {
+        String result = redis.get(key);
         System.out.println(result);
         return result;
     }

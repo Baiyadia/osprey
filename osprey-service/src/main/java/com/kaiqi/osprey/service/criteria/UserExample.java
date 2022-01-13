@@ -7,8 +7,8 @@ import java.util.List;
 /**
  * 用户信息表 查询条件类
  *
- * @author youpin-team
- * @date 2020-02-06 12:07:00
+ * @author newex-team
+ * @date 2022-01-11 11:18:51
  */
 public class UserExample {
     protected String orderByClause;
@@ -241,52 +241,62 @@ public class UserExample {
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdEqualTo(Long value) {
+        public Criteria andOpenIdEqualTo(String value) {
             addCriterion("open_id =", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdNotEqualTo(Long value) {
+        public Criteria andOpenIdNotEqualTo(String value) {
             addCriterion("open_id <>", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdGreaterThan(Long value) {
+        public Criteria andOpenIdGreaterThan(String value) {
             addCriterion("open_id >", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdGreaterThanOrEqualTo(Long value) {
+        public Criteria andOpenIdGreaterThanOrEqualTo(String value) {
             addCriterion("open_id >=", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdLessThan(Long value) {
+        public Criteria andOpenIdLessThan(String value) {
             addCriterion("open_id <", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdLessThanOrEqualTo(Long value) {
+        public Criteria andOpenIdLessThanOrEqualTo(String value) {
             addCriterion("open_id <=", value, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdIn(List<Long> values) {
+        public Criteria andOpenIdLike(String value) {
+            addCriterion("open_id like", value, "openId");
+            return (Criteria) this;
+        }
+
+        public Criteria andOpenIdNotLike(String value) {
+            addCriterion("open_id not like", value, "openId");
+            return (Criteria) this;
+        }
+
+        public Criteria andOpenIdIn(List<String> values) {
             addCriterion("open_id in", values, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdNotIn(List<Long> values) {
+        public Criteria andOpenIdNotIn(List<String> values) {
             addCriterion("open_id not in", values, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdBetween(Long value1, Long value2) {
+        public Criteria andOpenIdBetween(String value1, String value2) {
             addCriterion("open_id between", value1, value2, "openId");
             return (Criteria) this;
         }
 
-        public Criteria andOpenIdNotBetween(Long value1, Long value2) {
+        public Criteria andOpenIdNotBetween(String value1, String value2) {
             addCriterion("open_id not between", value1, value2, "openId");
             return (Criteria) this;
         }

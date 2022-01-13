@@ -1,10 +1,12 @@
 package com.kaiqi.osprey.security.jwt.token;
 
-import com.kaiqi.osprey.common.ucenter.model.SessionInfo;
-import com.kaiqi.osprey.common.ucenter.service.SessionService;
+import com.kaiqi.osprey.common.commons.entity.WebInfo;
+import com.kaiqi.osprey.common.consts.WebConsts;
+import com.kaiqi.osprey.common.session.model.SessionInfo;
+import com.kaiqi.osprey.common.session.service.SessionService;
+import com.kaiqi.osprey.common.util.IpUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtConsts;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
-import com.kaiqi.osprey.security.jwt.util.ValidateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +67,7 @@ public class JwtTokenUtils {
      * @return @see #JwtUserDetails
      */
     public static JwtUserDetails getCurrentLoginUser(HttpServletRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(WebConsts.JWT_CURRENT_USER);
         if (jwtUserDetails == null) {
             return JwtUserDetails.builder().status(JwtConsts.STATUS_NOT_EXISTS).build();
         }
@@ -113,7 +115,7 @@ public class JwtTokenUtils {
      * @param request http request
      */
     public static void clearSession(HttpServletRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(JwtConsts.JWT_CURRENT_USER);
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) request.getAttribute(WebConsts.JWT_CURRENT_USER);
         if (jwtUserDetails != null) {
             sessionService.remove(jwtUserDetails.getUserId());
         }
@@ -142,12 +144,12 @@ public class JwtTokenUtils {
      * 生成jwt token
      *
      * @param jwtUserDetails {@link JwtUserDetails}
-     * @param request        http request
+     * @param webInfo        http request
      * @return access token
      */
-    public static String generateToken(JwtUserDetails jwtUserDetails, HttpServletRequest request) {
-        jwtUserDetails.setIp(ValidateUtils.getRequestIP(request));
-        jwtUserDetails.setDevId(ValidateUtils.getDeviceId(request));
+    public static String generateToken(JwtUserDetails jwtUserDetails, WebInfo webInfo) {
+        jwtUserDetails.setIp(IpUtil.toLong(webInfo.getIpAddress()));
+        jwtUserDetails.setDevId(webInfo.getDeviceId());
         return jwtTokenProvider.generateToken(jwtUserDetails);
     }
 
@@ -156,9 +158,8 @@ public class JwtTokenUtils {
      *
      * @param jwtUserDetails {@link JwtUserDetails}
      * @param token          access token
-     * @param request        http request
      */
-    public static void createSession(JwtUserDetails jwtUserDetails, String token, HttpServletRequest request) {
+    public static void createSession(JwtUserDetails jwtUserDetails, String token) {
         SessionInfo sessionInfo = SessionInfo
                 .builder()
                 .userId(jwtUserDetails.getUserId())
@@ -173,13 +174,12 @@ public class JwtTokenUtils {
      * 生成jwt token 并 创建登录session记录
      *
      * @param jwtUserDetails {@link JwtUserDetails}
-     * @param request        http request
+     * @param wenInfo        http request
      * @return access token
      */
-    public static String generateTokenAndCreateSession(JwtUserDetails jwtUserDetails,
-                                                       HttpServletRequest request) {
-        String accessToken = generateToken(jwtUserDetails, request);
-        createSession(jwtUserDetails, accessToken, request);
+    public static String generateTokenAndCreateSession(JwtUserDetails jwtUserDetails, WebInfo wenInfo) {
+        String accessToken = generateToken(jwtUserDetails, wenInfo);
+        createSession(jwtUserDetails, accessToken);
         return accessToken;
     }
 

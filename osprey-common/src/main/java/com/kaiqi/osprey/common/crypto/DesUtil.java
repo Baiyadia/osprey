@@ -14,7 +14,7 @@ import java.util.Arrays;
 /**
  * DES加密和解密工具,可以对字符串进行加密和解密操作
  *
- * @author newex-team
+ * @author wangs
  * @date 2017/12/09
  * @since 0.0.1
  **/

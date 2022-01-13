@@ -38,6 +38,12 @@ public class DemoController {
         return ResultUtil.success(result);
     }
 
+    @GetMapping(value = "/redisDemo/{key}")
+    ResponseResult redisDemo(@PathVariable("key") String key) {
+        String result = demoService.redisDemo(key);
+        return ResultUtil.success(result);
+    }
+
     @PostMapping(value = "/index2/{walletId}")
     ResponseResult index2(@PathVariable("walletId") Long walletId,
                           @RequestParam(value = "pageNum", required = false, defaultValue = "1") final int pageNum,

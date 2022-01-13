@@ -28,4 +28,11 @@ public class UserSettingsServiceImpl extends AbstractCrudService<UserSettingsRep
         example.createCriteria().andFieldLike(fieldName, keyword);
         return example;
     }
+
+    @Override
+    public UserSettings getByUserId(Long userId) {
+        UserSettingsExample example = new UserSettingsExample();
+        example.createCriteria().andUserIdEqualTo(userId);
+        return getOneByExample(example);
+    }
 }

@@ -85,9 +85,6 @@
             <properties>
                 <props>src/main/filters/prod.properties</props>
             </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <build>
                 <resources>
                     <resource>
@@ -101,5 +98,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

@@ -12,4 +12,6 @@ import com.kaiqi.osprey.service.domain.UserSettings;
  */
 public interface UserSettingsService extends CrudService<UserSettings, UserSettingsExample, Long> {
 
+    UserSettings getByUserId(Long userId);
+
 }

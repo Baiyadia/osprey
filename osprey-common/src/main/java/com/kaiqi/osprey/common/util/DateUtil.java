@@ -204,6 +204,22 @@ public class DateUtil {
         return cal.getTime();
     }
 
+    /**
+     * date 日期加上或减去几小时
+     *
+     * @param date
+     * @param hours
+     * @return
+     */
+    public static Date addHours(Date date, int hours) {
+        Calendar cal = Calendar.getInstance();
+        if (date != null) {
+            cal.setTime(date);
+        }
+        cal.add(Calendar.HOUR_OF_DAY, hours);
+        return cal.getTime();
+    }
+
     /***
      * 获取季度月最后一个周5
      * @return

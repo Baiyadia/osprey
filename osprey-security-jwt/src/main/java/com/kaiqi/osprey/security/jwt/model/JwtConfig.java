@@ -1,10 +1,16 @@
 package com.kaiqi.osprey.security.jwt.model;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 /**
  * @author wangs
  * @date 2017/12/20
  */
-public final class JwtConfig {
+@Component
+@ConfigurationProperties(prefix = "osprey.security.jwt")
+public class JwtConfig {
+
     private String requestHeaderName;
     private String issuer;
     private String secret;

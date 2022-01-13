@@ -23,9 +23,27 @@ public class UserLoginRecordServiceImpl extends AbstractCrudService<UserLoginRec
     private UserLoginRecordRepository userLoginRecordRepository;
 
     @Override
-    protected UserLoginRecordExample getPageExample(final String fieldName, final String keyword) {
-        final UserLoginRecordExample example = new UserLoginRecordExample();
+    protected UserLoginRecordExample getPageExample(String fieldName, String keyword) {
+        UserLoginRecordExample example = new UserLoginRecordExample();
         example.createCriteria().andFieldLike(fieldName, keyword);
         return example;
     }
+
+    @Override
+    public UserLoginRecord getLastLoginRecord(Long userId) {
+        UserLoginRecordExample loginRecordExample = new UserLoginRecordExample();
+        loginRecordExample.createCriteria().andUserIdEqualTo(userId);
+        loginRecordExample.setOrderByClause(" id desc");
+        return getOneByExample(loginRecordExample);
+    }
+
+    @Override
+    public UserLoginRecord getByUidDeviceId(Long userId, String deviceId) {
+        UserLoginRecordExample recordExample = new UserLoginRecordExample();
+        recordExample.createCriteria()
+                     .andDeviceIdEqualTo(deviceId)
+                     .andUserIdEqualTo(userId);
+        return getOneByExample(recordExample);
+    }
+
 }
