@@ -36,7 +36,7 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private SessionService sessionService;
 
-    public JwtInterceptor() {
+    public JwtInterceptor(JwtTokenProvider jwtTokenProvider) {
     }
 
     @Override

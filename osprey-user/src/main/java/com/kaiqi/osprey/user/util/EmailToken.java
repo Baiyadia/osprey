@@ -7,7 +7,7 @@ import lombok.ToString;
 /**
  * 邮箱令牌结构
  *
- * @author newex-team
+ * @author wangs
  * @date 2018-07-02
  */
 @Getter

@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Email Token 令牌生成 util类
  *
- * @author newex-team
+ * @author wangs
  * @date 2018-07-02
  */
 @Slf4j

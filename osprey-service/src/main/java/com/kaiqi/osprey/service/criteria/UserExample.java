@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 用户信息表 查询条件类
  *
- * @author newex-team
+ * @author wangs
  * @date 2022-01-11 11:18:51
  */
 public class UserExample {

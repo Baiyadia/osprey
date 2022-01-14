@@ -123,7 +123,7 @@ public class JwtSecurityExceptionAdvice {
     public ResponseResult handleBusinessFrozenException(BusinessFrozenException e,
                                                         HttpServletRequest request,
                                                         HttpServletResponse response) {
-        log.warn("BusinessFrozenException App:{},Url:{},Message:{}",
+        log.warn("CsrfInterceptException App:{},Url:{},Message:{}",
                 AppEnvConsts.APP_NAME_ITEM, request.getRequestURL(), e.getMessage());
         return ResultUtil.failure(JwtSecurityErrorCode.TOKEN_BIZ_FROZEN);
     }

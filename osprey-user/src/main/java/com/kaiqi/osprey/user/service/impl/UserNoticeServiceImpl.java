@@ -25,7 +25,7 @@ import java.util.HashMap;
 /**
  * 用户通知事件表 服务实现
  *
- * @author newex-team
+ * @author wangs
  * @date 2018-07-28
  */
 @Slf4j

@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <description>JSON Web Token(JWT)生成与解析组件</description>
 
-    <artifactId>osprey-security-jwt</artifactId>
+    <artifactId>osprey-security</artifactId>
 
     <dependencies>
         <dependency>

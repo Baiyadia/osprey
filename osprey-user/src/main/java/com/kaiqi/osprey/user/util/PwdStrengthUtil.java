@@ -3,7 +3,7 @@ package com.kaiqi.osprey.user.util;
 /**
  * 密码强度
  *
- * @author newex-team
+ * @author wangs
  * @date 2018-07-02
  */
 public final class PwdStrengthUtil {
