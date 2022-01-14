@@ -111,7 +111,6 @@ public class UserBizServiceImpl implements UserBizService {
                 return ResultUtil.failure(ErrorCodeEnum.USER_INVITE_CODE_NOT_FOUND);
             }
         }
-
         /**
          * 持久化user、settings
          */
@@ -125,11 +124,24 @@ public class UserBizServiceImpl implements UserBizService {
             log.info("register reqVO:{} failure {}", reqVO, e);
             throw new OspreyBizException(ErrorCodeEnum.REGISTER_SAVE_FAILED);
         }
-
         /**
-         * 生成jwt 颁发令牌
+         * 颁发令牌
          */
-        UserDetails userDetails = genUserDetails(user, settings, webInfo);
+        AccessTokenResVO token = issueToken(user, settings, webInfo, BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE);
+        return ResultUtil.success(token);
+    }
+
+    /**
+     * 生成jwt、颁发令牌、记录登录流水
+     */
+    @Override
+    public AccessTokenResVO issueToken(User user, UserSettings settings, WebInfo webInfo, BusinessTypeEnum businessType) {
+        UserDetails userDetails = new UserDetails();
+        BeanUtils.copyProperties(user, userDetails);
+        BeanUtils.copyProperties(settings, userDetails);
+        userDetails.setLastLoginIp(webInfo.getIpAddress());
+        userDetails.setDeviceId(webInfo.getDeviceId());
+
         JwtUserDetails jwtUserDetails = jwtTokenService.createJwtUserDetails(userDetails);
         UserProfileVO profile = UserProfileVO.builder()
                                              .openId(user.getOpenId())
@@ -150,10 +162,10 @@ public class UserBizServiceImpl implements UserBizService {
                                                  .profile(profile)
                                                  .build();
         /**
-         * 安全记录
+         * 记录用户登录历史
          */
-        operatorFacadeService.recordLoginEvent(token.getAccessToken(), userDetails, BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE, webInfo);
-        return ResultUtil.success(token);
+        operatorFacadeService.recordLoginEvent(token.getAccessToken(), userDetails, businessType, webInfo);
+        return token;
     }
 
     /**
@@ -213,21 +225,5 @@ public class UserBizServiceImpl implements UserBizService {
             settings.setEmailAuthFlag(UserStatusEnum.USER_EMAIL_SETTING_STATUS_OK.getStatus());
         }
         return settings;
-    }
-
-    /**
-     * create simple userDetails object
-     *
-     * @param user
-     * @param settings
-     * @return
-     */
-    private UserDetails genUserDetails(User user, UserSettings settings, WebInfo webInfo) {
-        UserDetails userDetails = new UserDetails();
-        BeanUtils.copyProperties(user, userDetails);
-        BeanUtils.copyProperties(settings, userDetails);
-        userDetails.setLastLoginIp(webInfo.getIpAddress());
-        userDetails.setDeviceId(webInfo.getDeviceId());
-        return userDetails;
     }
 }

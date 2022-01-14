@@ -40,11 +40,10 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request,
-                             HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.debug("request url:{}", request.getRequestURL());
 
-        String tokenName = this.jwtTokenProvider.getJwtConfig().getRequestHeaderName();
+        String tokenName = jwtTokenProvider.getJwtConfig().getRequestHeaderName();
         String token = request.getHeader(tokenName);
         if (StringUtils.isBlank(token)) {
             if (AppEnvConsts.isProductionMode()) {
@@ -59,13 +58,13 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
 
         JwtUserDetails jwtUserDetails = null;
         try {
-            JwtPublicClaims claims = this.jwtTokenProvider.parseClaims(token);
-            jwtUserDetails = this.jwtTokenProvider.getJwtUserDetails(claims);
-            this.validateAndRefresh(jwtUserDetails, token, request);
+            JwtPublicClaims claims = jwtTokenProvider.parseClaims(token);
+            jwtUserDetails = jwtTokenProvider.getJwtUserDetails(claims);
+            validateAndRefresh(jwtUserDetails, token, request);
         } catch (JwtTokenForbiddenException | SessionExpiredException ex) {
             throw ex;
         } catch (Exception ex) {
-            this.clearSession(token, jwtUserDetails);
+            clearSession(token, jwtUserDetails);
             if (ex instanceof SignatureException) {
                 throw new JwtTokenInvalidException(ex.getMessage(), ex);
             }
@@ -88,7 +87,7 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
             return;
         }
 
-        SessionInfo session = this.sessionService.getByToken(token);
+        SessionInfo session = sessionService.getByToken(token);
         if (Objects.isNull(session)) {
             throw new SessionExpiredException();
         }
@@ -101,7 +100,7 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
             throw new JwtTokenForbiddenException();
         }
         //非正常访问
-        if (this.jwtTokenProvider.verifyIpAndDevice(
+        if (jwtTokenProvider.verifyIpAndDevice(
                 jwtUserDetails,
                 WebUtil.getDeviceId(request),
                 IpUtil.toLong(IpUtil.getRealIPAddress(request)))
@@ -109,10 +108,10 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
             throw new AbnormalAccessException();
         }
 
-        this.sessionService.refresh(token, jwtUserDetails.getUserId());
+        sessionService.refresh(token, jwtUserDetails.getUserId());
     }
 
     private void clearSession(String token, JwtUserDetails jwtUserDetails) {
-        this.sessionService.remove(token, jwtUserDetails == null ? -1 : jwtUserDetails.getUserId());
+        sessionService.remove(token, jwtUserDetails == null ? -1 : jwtUserDetails.getUserId());
     }
 }
