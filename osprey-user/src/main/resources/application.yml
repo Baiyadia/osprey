@@ -19,7 +19,7 @@ spring:
     host: @spring.redis.host@
     port: @spring.redis.port@
     timeout: @spring.redis.timeout@
-#    password: @spring.redis.password@
+    #    password: @spring.redis.password@
     lettuce:
       pool:
         max-active: @spring.redis.pool.max-active@

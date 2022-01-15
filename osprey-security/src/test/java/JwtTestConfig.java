@@ -1,6 +1,6 @@
+import com.kaiqi.osprey.security.SecurityProperties;
 import com.kaiqi.osprey.security.jwt.crypto.AesJwtTokenCryptoProvider;
 import com.kaiqi.osprey.security.jwt.crypto.JwtTokenCryptoProvider;
-import com.kaiqi.osprey.security.jwt.model.JwtConfig;
 import com.kaiqi.osprey.security.jwt.token.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,7 +20,7 @@ public class JwtTestConfig {
 
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
-        JwtConfig jwtConfig = new JwtConfig();
+        SecurityProperties.Jwt jwtConfig = new SecurityProperties.Jwt();
         jwtConfig.setCryptoKey(jwtProperties.getCryptoKey());
         jwtConfig.setIssuer(jwtProperties.getIssuer());
         jwtConfig.setSecret(jwtProperties.getSecret());

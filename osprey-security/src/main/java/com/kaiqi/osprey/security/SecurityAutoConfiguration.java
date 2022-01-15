@@ -6,7 +6,6 @@ import com.kaiqi.osprey.security.csrf.CsrfInterceptor;
 import com.kaiqi.osprey.security.jwt.JwtInterceptor;
 import com.kaiqi.osprey.security.jwt.crypto.AesJwtTokenCryptoProvider;
 import com.kaiqi.osprey.security.jwt.crypto.JwtTokenCryptoProvider;
-import com.kaiqi.osprey.security.jwt.model.JwtConfig;
 import com.kaiqi.osprey.security.jwt.token.JwtTokenProvider;
 import com.kaiqi.osprey.security.xss.XssFilter;
 import org.springframework.beans.BeansException;
@@ -84,8 +83,7 @@ public class SecurityAutoConfiguration extends WebMvcConfigurerAdapter implement
      */
     @Bean
     @ConditionalOnClass(JwtInterceptor.class)
-    @ConditionalOnProperty(prefix = "osprey.security.jwt",
-            name = { "interceptor", "enabled" }, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "osprey.security.jwt", name = { "interceptor", "enabled" }, matchIfMissing = true)
     public JwtInterceptor jwtInterceptor() {
         return new JwtInterceptor(jwtTokenProvider());
     }
@@ -97,15 +95,15 @@ public class SecurityAutoConfiguration extends WebMvcConfigurerAdapter implement
     public JwtTokenProvider jwtTokenProvider() {
         SecurityProperties.Jwt jwt = securityProperties.getJwt();
 
-        JwtConfig jwtConfig = new JwtConfig();
-        jwtConfig.setRequestHeaderName(jwt.getRequestHeaderName());
-        jwtConfig.setCryptoKey(jwt.getCryptoKey());
-        jwtConfig.setIssuer(jwt.getIssuer());
-        jwtConfig.setSecret(jwt.getSecret());
-        jwtConfig.setExpiration(jwt.getExpiration());
+//        JwtConfig jwtConfig = new JwtConfig();
+//        jwtConfig.setRequestHeaderName(jwt.getRequestHeaderName());
+//        jwtConfig.setCryptoKey(jwt.getCryptoKey());
+//        jwtConfig.setIssuer(jwt.getIssuer());
+//        jwtConfig.setSecret(jwt.getSecret());
+//        jwtConfig.setExpiration(jwt.getExpiration());
 
         JwtTokenCryptoProvider cryptoProvider = new AesJwtTokenCryptoProvider();
-        return new JwtTokenProvider(jwtConfig, cryptoProvider);
+        return new JwtTokenProvider(jwt, cryptoProvider);
     }
 
     @Bean

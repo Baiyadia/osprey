@@ -166,6 +166,7 @@ public class SecurityProperties {
         private String excludePathPatterns = "";
         private long expiration = 604800;
         private String cryptoAlgorithm = "AES";
+        private boolean validateIpAndDevice;
 
         /**
          * 获取httpRequest Header中存放jwt token的名称
@@ -296,6 +297,14 @@ public class SecurityProperties {
          */
         public void setCryptoAlgorithm(String cryptoAlgorithm) {
             this.cryptoAlgorithm = cryptoAlgorithm;
+        }
+
+        public boolean isValidateIpAndDevice() {
+            return validateIpAndDevice;
+        }
+
+        public void setValidateIpAndDevice(boolean validateIpAndDevice) {
+            this.validateIpAndDevice = validateIpAndDevice;
         }
     }
 }

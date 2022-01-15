@@ -14,7 +14,7 @@ public class SessionConsts {
     /**
      * Session default namespace in container(redis,memcached or map)
      */
-    public static final String DEFAULT_NAMESPACE = "newex_session_";
+    public static final String DEFAULT_NAMESPACE = "osprey_session_";
 
     /**
      * Session expired max inactive interval (default 30 seconds)
@@ -22,12 +22,12 @@ public class SessionConsts {
     public static final String SESSION_MAX_INACTIVE_INTERVAL = DEFAULT_NAMESPACE + "max_inactive_interval";
 
     /**
-     * Prefix of Session Id("newex_session_id_")
+     * Prefix of Session Id("osprey_session_id_")
      */
     public static final String SESSION_ID_PREFIX = DEFAULT_NAMESPACE + "id_";
 
     /**
-     * Prefix of Session User Id ("newex_session_user_id_")
+     * Prefix of Session User Id ("osprey_session_user_id_")
      */
     public static final String SESSION_USER_ID_PREFIX = DEFAULT_NAMESPACE + "user_id_";
 }

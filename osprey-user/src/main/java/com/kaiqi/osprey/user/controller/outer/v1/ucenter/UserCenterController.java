@@ -139,7 +139,6 @@ public class UserCenterController {
             log.error("updateNickname failure user {}  {}", currentLoginUser, e);
             return ResultUtil.failure(ErrorCodeEnum.USER_SET_NICKNAME_ERROR);
         }
-
     }
 
     /**
