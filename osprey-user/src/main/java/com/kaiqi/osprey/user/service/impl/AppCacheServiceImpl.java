@@ -246,6 +246,7 @@ public class AppCacheServiceImpl implements AppCacheService {
             log.error("verification code is error! imageCode={} serialNO={}", imageCode, serialNo);
             return ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR;
         }
+        deleteImageVerificationCode(serialNo);
         return null;
     }
 

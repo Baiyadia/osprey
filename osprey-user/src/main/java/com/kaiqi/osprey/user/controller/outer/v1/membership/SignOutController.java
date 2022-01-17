@@ -21,6 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(value = "/v1/osprey/users/membership/sign-out")
 public class SignOutController {
 
+    /**
+     * 用户注销
+     */
     @GetMapping(value = "")
     public ResponseResult logout(HttpServletRequest request) {
         try {

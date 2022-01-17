@@ -45,10 +45,6 @@ public class SignUpController {
 
     /**
      * 手机号注册
-     *
-     * @param form
-     * @param request
-     * @return
      */
     @PostMapping("/mobile")
     public ResponseResult registerByMobile(@RequestBody @Valid RegisterReqVO form, HttpServletRequest request) {
@@ -112,6 +108,9 @@ public class SignUpController {
 
     }
 
+    /**
+     * 邮箱注册
+     */
     @PostMapping("email")
     public ResponseResult registerByEmail(@RequestBody @Valid RegisterReqVO form, HttpServletRequest request) {
         try {

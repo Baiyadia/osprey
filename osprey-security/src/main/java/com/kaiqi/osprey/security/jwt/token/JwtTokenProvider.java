@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +19,7 @@ import java.util.function.Function;
 
 /**
  * JwtToken生成器
+ *
  * @author wangs
  * @date 2017/12/19
  */
@@ -77,9 +77,9 @@ public class JwtTokenProvider {
 
     public JwtPublicClaims parseClaims(String token) {
         Claims claims = Jwts.parser()
-                                  .setSigningKey(jwtConfig.getSecret())
-                                  .parseClaimsJws(token)
-                                  .getBody();
+                            .setSigningKey(jwtConfig.getSecret())
+                            .parseClaimsJws(token)
+                            .getBody();
         return new JwtPublicClaims(claims);
     }
 
@@ -134,8 +134,7 @@ public class JwtTokenProvider {
         JwtPublicClaims jwtPublicClaims = parseClaims(token);
         String username = jwtPublicClaims.getUsername();
         Date expired = jwtPublicClaims.getExpiration();
-        return (username.equals(user.getUsername())
-                && !isExpiredToken(expired));
+        return (username.equals(user.getUsername()) && !isExpiredToken(expired));
     }
 
     public boolean isExpiredToken(Date expired) {

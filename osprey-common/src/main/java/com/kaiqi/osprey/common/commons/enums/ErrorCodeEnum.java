@@ -255,14 +255,9 @@ public enum ErrorCodeEnum implements ErrorCode {
     USER_EMAIL_NOT_BIND(1058, 400, "用户未绑定邮箱"),
 
     /**
-     * 旧手机验证码校验失败
+     * 旧验证码校验失败
      */
-    USER_OLD_SMS_CODE_VERIFY_ERROR(1059, 400, "旧手机验证码校验失败"),
-
-    /**
-     * 旧邮箱验证码校验失败
-     */
-    USER_OLD_EMAIL_CODE_VERIFY_ERROR(1060, 400, "旧邮箱验证码校验失败"),
+    USER_OLD_CODE_VERIFY_ERROR(1059, 400, "旧验证码校验失败"),
 
     /**
      * 参数校验异常

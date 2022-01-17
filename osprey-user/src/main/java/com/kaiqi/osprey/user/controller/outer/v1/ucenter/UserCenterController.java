@@ -63,7 +63,7 @@ public class UserCenterController {
     public ResponseResult profile(HttpServletRequest request) {
         try {
             JwtUserDetails userDetails = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-            User dbUser = this.userService.getById(userDetails.getUserId());
+            User dbUser = userService.getById(userDetails.getUserId());
 //            UserSettingsExample settingsExample = new UserSettingsExample();
 //            settingsExample.createCriteria().andUserIdEqualTo(dbUser.getUserId());
 //            UserSettings settings = userSettingsService.getOneByExample(settingsExample);
@@ -82,6 +82,9 @@ public class UserCenterController {
         }
     }
 
+    /**
+     * 用户反馈
+     */
     @PostMapping("/feedback")
     public ResponseResult feedback(@RequestBody FeedbackReqVO feedbackReqVO, HttpServletRequest request) {
         try {
@@ -94,7 +97,7 @@ public class UserCenterController {
             UserFeedbackExample feedbackExample = new UserFeedbackExample();
             feedbackExample.createCriteria().andUserIdEqualTo(currentLoginUser.getUserId())
                            .andCreateTimeBetween(DateUtil.addHours(new Date(), -24), new Date());
-            List<UserFeedback> byExample = this.userFeedbackService.getByExample(feedbackExample);
+            List<UserFeedback> byExample = userFeedbackService.getByExample(feedbackExample);
             if (byExample.size() >= USER_MAX_FEEDBACK_NUMBER) {
                 return ResultUtil.failure(ErrorCodeEnum.USER_SUBMIT_FEEDBACK_LIMIT);
             }
@@ -111,7 +114,7 @@ public class UserCenterController {
             }
             feedback.setUserId(currentLoginUser.getUserId());
             feedback.setType(FeedbackTypeEnum.FEEDBACK_PROBLEM.getType());
-            this.userFeedbackService.add(feedback);
+            userFeedbackService.add(feedback);
             return ResultUtil.success();
         } catch (Exception e) {
             log.error("users center submit feedback error {} ", e);
@@ -128,7 +131,7 @@ public class UserCenterController {
             example.createCriteria()
                    .andUserIdEqualTo(currentLoginUser.getUserId())
                    .andNicknameEqualTo(nickname);
-            boolean result = this.userService.updateNickname(currentLoginUser.getUserId(), nickname);
+            boolean result = userService.updateNickname(currentLoginUser.getUserId(), nickname);
             if (result) {
                 SessionInfo session = JwtTokenUtils.getSession(currentLoginUser.getUserId());
                 session.setUsername(nickname);
@@ -161,7 +164,7 @@ public class UserCenterController {
             if (StringUtils.isEmpty(user.getMobile())) {
                 return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_NOT_BIND);
             }
-            this.userNoticeService.sendSMS(LocaleUtil.getLocale(request),
+            userNoticeService.sendSMS(LocaleUtil.getLocale(request),
                     BusinessTypeEnum.USER_CHANGE_MOBILE_SEND_OLD,
                     NoticeSendLogConsts.BUSINESS_CODE,
                     user.getMobile(),
@@ -172,7 +175,7 @@ public class UserCenterController {
             if (StringUtils.isEmpty(user.getEmail())) {
                 return ResultUtil.failure(ErrorCodeEnum.USER_EMAIL_NOT_BIND);
             }
-            this.userNoticeService.sendEmail(LocaleUtil.getLocale(request),
+            userNoticeService.sendEmail(LocaleUtil.getLocale(request),
                     BusinessTypeEnum.USER_CHANGE_EMAIL_SEND_OLD,
                     NoticeSendLogConsts.BUSINESS_CODE,
                     user.getEmail(),
@@ -187,26 +190,17 @@ public class UserCenterController {
                                              @RequestParam("oldDeviceCode") String oldDeviceCode,
                                              HttpServletRequest request) {
         JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-        User dbUser = this.userService.getById(user.getUserId());
-        if (type == 1) {
-            ResponseResult<?> oldCheckResult = this.checkCodeService.checkMobileCode(
-                    user.getUserId(),
-                    dbUser.getAreaCode() + dbUser.getMobile(),
-                    oldDeviceCode,
-                    BusinessTypeEnum.USER_CHANGE_MOBILE_SEND_OLD);
-            if (oldCheckResult.getCode() != 0) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_OLD_SMS_CODE_VERIFY_ERROR);
-            }
-        } else {
-            ResponseResult<?> oldCheckResult = this.checkCodeService.checkEmailCode(
-                    user.getUserId(),
-                    user.getEmail(),
-                    oldDeviceCode,
-                    BusinessTypeEnum.USER_CHANGE_EMAIL_SEND_OLD);
-            if (oldCheckResult.getCode() != 0) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_OLD_EMAIL_CODE_VERIFY_ERROR);
-            }
+        User dbUser = userService.getById(user.getUserId());
+        ResponseResult<?> oldCheckResult = checkCodeService.checkCode(
+                user.getUserId(),
+                type == 1 ? dbUser.getAreaCode() + dbUser.getMobile() : user.getEmail(),
+                oldDeviceCode,
+                type == 1 ? BusinessTypeEnum.USER_CHANGE_MOBILE_SEND_OLD : BusinessTypeEnum.USER_CHANGE_EMAIL_SEND_OLD,
+                type);
+        if (oldCheckResult.getCode() != 0) {
+            return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
+
         Map<String, String> step1SuccessTab = Maps.newHashMap();
         String signStr = UUID.randomUUID().toString().replace("-", "");
         REDIS.setEx(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId(), signStr, RedisConsts.DURATION_SECONDS_OF_15_MINTUES);
@@ -220,14 +214,14 @@ public class UserCenterController {
 
         JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
 
-        User dbUser = this.userService.getById(user.getUserId());
+        User dbUser = userService.getById(user.getUserId());
 
         String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId());
         if (StringUtils.isEmpty(step2Sign) || !step2Sign.equals(form.getOldMobileCode())) {
-            return ResultUtil.failure(ErrorCodeEnum.USER_OLD_SMS_CODE_VERIFY_ERROR);
+            return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
 
-        ResponseResult<?> emailResult = this.checkCodeService.checkMobileCode(
+        ResponseResult<?> emailResult = checkCodeService.checkMobileCode(
                 user.getUserId(),
                 form.getAreaCode() + form.getMobile(),
                 form.getMobileCode(),
@@ -237,7 +231,7 @@ public class UserCenterController {
         }
         dbUser.setAreaCode(form.getAreaCode());
         dbUser.setMobile(form.getMobile());
-        this.userService.editById(dbUser);
+        userService.editById(dbUser);
         SessionInfo session = JwtTokenUtils.getSession(user.getUserId());
         session.setMobile(form.getMobile());
         JwtTokenUtils.updateSession(session);
@@ -250,13 +244,13 @@ public class UserCenterController {
 
         JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
         //检查密码放前面
-        User dbUser = this.userService.getById(user.getUserId());
+        User dbUser = userService.getById(user.getUserId());
         String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId());
         if (StringUtils.isEmpty(step2Sign) || !step2Sign.equals(form.getOldEmailCode())) {
-            return ResultUtil.failure(ErrorCodeEnum.USER_OLD_SMS_CODE_VERIFY_ERROR);
+            return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
 
-        ResponseResult<?> emailResult = this.checkCodeService.checkEmailCode(
+        ResponseResult<?> emailResult = checkCodeService.checkEmailCode(
                 user.getUserId(),
                 form.getEmail(),
                 form.getEmailCode(),
@@ -266,7 +260,7 @@ public class UserCenterController {
         }
 
         dbUser.setEmail(form.getEmail());
-        this.userService.editById(dbUser);
+        userService.editById(dbUser);
         SessionInfo session = JwtTokenUtils.getSession(user.getUserId());
         session.setEmail(form.getEmail());
         JwtTokenUtils.updateSession(session);

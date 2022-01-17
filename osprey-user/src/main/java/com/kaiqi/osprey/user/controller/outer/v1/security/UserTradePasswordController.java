@@ -38,38 +38,50 @@ public class UserTradePasswordController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * 更新交易密码
+     */
     @PostMapping("/update")
     public ResponseResult tradePassUpdate(@RequestBody WalletPathReqVO walletPathReqVO,
                                           HttpServletRequest request) {
-        JwtUserDetails currentLoginUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
+        JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
         try {
-            if (ObjectUtils.isEmpty(currentLoginUser)) {
+            if (ObjectUtils.isEmpty(tokenUser)) {
                 return ResultUtil.failure(ErrorCodeEnum.USER_NO_LOGIN);
             }
-            if (currentLoginUser.getTradePasswordSetFlag() == SwitchConsts.OFF) {
-                boolean result = userBizService.setTradePassword(passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + currentLoginUser.getUserId()),
-                        currentLoginUser.getUserId(), walletPathReqVO.getEncodePath());
+            /**
+             * 未设置过交易密码
+             */
+            if (tokenUser.getTradePasswordSetFlag() == SwitchConsts.OFF) {
+                boolean result = userBizService.setTradePassword(
+                        passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + tokenUser.getUserId()),
+                        tokenUser.getUserId(),
+                        walletPathReqVO.getEncodePath());
                 if (result) {
-                    SessionInfo session = JwtTokenUtils.getSession(currentLoginUser.getUserId());
+                    SessionInfo session = JwtTokenUtils.getSession(tokenUser.getUserId());
                     session.setTradePasswordSetFlag(SwitchConsts.ON);
                     JwtTokenUtils.updateSession(session);
                 }
                 return ResultUtil.success();
-            } else {
+            }
+            /**
+             * 设置过交易密码
+             */
+            if (tokenUser.getTradePasswordSetFlag() == SwitchConsts.ON) {
                 if (!StringUtils.isEmpty(walletPathReqVO.getValidatePass())) {
-                    User user = userService.getById(currentLoginUser.getUserId());
-                    if (!passwordEncoder.matches((walletPathReqVO.getValidatePass() + currentLoginUser.getUserId()), user.getTradePasswordCryptoHash())) {
+                    User dbUser = userService.getById(tokenUser.getUserId());
+                    if (!passwordEncoder.matches((walletPathReqVO.getValidatePass() + tokenUser.getUserId()), dbUser.getTradePasswordCryptoHash())) {
                         return ResultUtil.failure(ErrorCodeEnum.TRADE_PASSWORD_CHECK_ERROR);
                     }
-                    userBizService.setTradePassword(passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + currentLoginUser.getUserId()),
-                            currentLoginUser.getUserId(), walletPathReqVO.getEncodePath());
+                    userBizService.setTradePassword(passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + tokenUser.getUserId()),
+                            tokenUser.getUserId(), walletPathReqVO.getEncodePath());
                     return ResultUtil.success();
                 }
             }
-            log.error("tradePassUpdate error validatePass is null user {}", currentLoginUser.getUserId());
+            log.error("tradePassUpdate error validatePass is null user {}", tokenUser.getUserId());
             return ResultUtil.failure(ErrorCodeEnum.SET_TRADE_PASSWORD_ERROR);
         } catch (Exception e) {
-            log.error("tradePassUpdate error userid {} e {}", currentLoginUser.getUserId(), e);
+            log.error("tradePassUpdate error userid {} e {}", tokenUser.getUserId(), e);
             return ResultUtil.failure(ErrorCodeEnum.SET_TRADE_PASSWORD_ERROR);
         }
     }

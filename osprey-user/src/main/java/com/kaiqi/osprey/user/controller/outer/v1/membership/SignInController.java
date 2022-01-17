@@ -69,10 +69,6 @@ public class SignInController {
 
     /**
      * 用户登录
-     *
-     * @param reqVO
-     * @param request
-     * @return
      */
     @PostMapping("")
     public ResponseResult login(@RequestBody @Valid LoginReqVO reqVO, HttpServletRequest request) {
@@ -158,11 +154,6 @@ public class SignInController {
     /**
      * 新设备登录检查
      * 需校验新设备校验验证码
-     *
-     * @param
-     * @return
-     * @author wangs
-     * @date 2022-01-10 20:08
      */
     private ResponseResult checkNewDevice(LoginReqVO reqVO, HttpServletRequest request, String ipAddress, String deviceId, User user) {
         boolean isNewDevice = userBizService.isNewDevice(deviceId, user.getUserId());
@@ -184,18 +175,14 @@ public class SignInController {
             log.info("user sign in new device login send notice result = {} userId = {}", noticeResult, user.getUserId());
             return ResultUtil.failure(ErrorCodeEnum.USER_NEW_DEVICE_LOGIN_VERIFY, noticeResult);
         } else {
-            if (!StringUtil.isEmail(reqVO.getUsername())) {
-                ResponseResult<?> responseResult = checkCodeService.checkMobileCode(
-                        user.getUserId(), user.getAreaCode() + user.getMobile(), reqVO.getVerificationCode(), BusinessTypeEnum.USER_LOGIN_TYPE_MOBILE);
-                if (responseResult.getCode() != 0) {
-                    return ResultUtil.failure(ErrorCodeEnum.USER_NEW_DEVICE_LOGIN_CODE_ERROR);
-                }
-            } else {
-                ResponseResult<?> responseResult = checkCodeService.checkEmailCode(
-                        user.getUserId(), user.getMobile(), reqVO.getVerificationCode(), BusinessTypeEnum.USER_LOGIN_TYPE_EMAIL);
-                if (responseResult.getCode() != 0) {
-                    return ResultUtil.failure(ErrorCodeEnum.USER_NEW_DEVICE_LOGIN_CODE_ERROR);
-                }
+            ResponseResult<?> checkCodeResult = checkCodeService.checkCode(
+                    user.getUserId(),
+                    StringUtil.isEmail(reqVO.getUsername()) ? user.getEmail() : user.getAreaCode() + user.getMobile(),
+                    reqVO.getVerificationCode(),
+                    StringUtil.isEmail(reqVO.getUsername()) ? BusinessTypeEnum.USER_LOGIN_TYPE_EMAIL : BusinessTypeEnum.USER_LOGIN_TYPE_MOBILE,
+                    StringUtil.isEmail(reqVO.getUsername()) ? 2 : 1);
+            if (checkCodeResult.getCode() != 0) {
+                return ResultUtil.failure(ErrorCodeEnum.USER_NEW_DEVICE_LOGIN_CODE_ERROR);
             }
         }
         return ResultUtil.success();

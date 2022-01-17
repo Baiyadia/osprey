@@ -53,7 +53,7 @@ public class ForgetPwdController {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * 找回密码第一步-
+     * 找回密码第一步
      *
      * @param form
      * @param request
