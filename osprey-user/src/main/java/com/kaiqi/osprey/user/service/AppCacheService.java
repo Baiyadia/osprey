@@ -1,7 +1,7 @@
 package com.kaiqi.osprey.user.service;
 
+import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.service.domain.User;
-import com.kaiqi.osprey.user.enums.BusinessTypeEnum;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,48 +50,47 @@ public interface AppCacheService {
     String getResetPwdLoginName(String loginName);
 
     /**
-     * 统计重置密码邮箱发送次数
-     *
-     * @param ip
-     * @param deviceId
-     * @param loginName
-     * @param userResetPasswordEmail
-     */
-    void setResetSendEmailTimes(String ip, String deviceId, String loginName, BusinessTypeEnum userResetPasswordEmail);
-
-    /**
-     * 统计重置密码手机发送次数
-     *
-     * @param ipAddress
-     * @param deviceId
-     * @param loginName
-     * @param userResetPasswordEmail
-     */
-    void setResetSendMobileTimes(String ipAddress, String deviceId, Integer areaCode, String loginName, BusinessTypeEnum userResetPasswordEmail);
-
-    /**
      * 获取短信或者邮件-校验设备发送次数
      *
-     * @param ip
      * @param deviceId
      * @param areaCode
      * @param mobile
      * @param email
      * @return
      */
-    boolean checkDeviceSendTimes(String ip, String deviceId, Integer areaCode, String mobile, String email);
+    boolean overCodeSendTimesLimit(String deviceId, Integer areaCode, String mobile, String email);
 
     /**
-     * 获取短信或者邮件-记录设备发送次数
+     * 获取短信或者邮件-记录验证码发送次数
      *
      * @param deviceId
      * @param mobile
      * @param areaCode
      * @param email
      */
-    void recordDeviceSendTimes(String deviceId, String mobile, Integer areaCode, String email);
+    void addSendCodeTimes(String deviceId, String mobile, Integer areaCode, String email);
 
-    boolean checkResetIsNeedImage(String loginName, String deviceId, String ip, Integer areaCode);
+    /**
+     * 登录检查图片验证码
+     *
+     * @param userId
+     */
+    ErrorCodeEnum loginCheckImageCode(Long userId, String imageCode, String serialNo);
 
-    void setLoginTimesLimitCount(User user, HttpServletRequest request, String deviceId);
+    /**
+     * 密码重置检查图片验证码
+     *
+     * @param deviceId
+     * @param loginName
+     * @param areaCode
+     */
+    ErrorCodeEnum resetCheckImageCode(String loginName, String deviceId, Integer areaCode, String imageCode, String serialNo);
+
+    /**
+     * 增加密码错误次数
+     *
+     * @param request
+     * @param deviceId
+     */
+    void addPwdErrorTimes(User user, HttpServletRequest request, String deviceId);
 }

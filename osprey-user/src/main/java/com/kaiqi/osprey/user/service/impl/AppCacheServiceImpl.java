@@ -1,6 +1,7 @@
 package com.kaiqi.osprey.user.service.impl;
 
 import com.google.common.collect.Maps;
+import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
 import com.kaiqi.osprey.common.consts.RedisConsts;
 import com.kaiqi.osprey.common.redis.REDIS;
@@ -37,7 +38,26 @@ public class AppCacheServiceImpl implements AppCacheService {
     @Autowired
     private UserNoticeService userNoticeService;
 
-    private static long ONE_DAY = 24 * 60 * 60;
+    private static long ONE_HOUR_SECONDS = 60 * 60;
+    private static long ONE_DAY_SECONDS = 24 * ONE_HOUR_SECONDS;
+
+    private static long ONE_HOUR_MILLIS = 60 * 60 * 1000;
+    private static long ONE_DAY_MILLIS = 24 * ONE_HOUR_MILLIS;
+
+    // 一小时内设备发送验证码次数限制
+    private static final int SEND_CODE_TIMES_LIMIT_HOUR = 3;
+    // 一天内设备发送验证码次数限制
+    private static final int SEND_CODE_TIMES_LIMIT_DAY = 5;
+
+    // 一小时内登录次数超过限制需验证图片验证码
+    private static final int LOGIN_TIMES_NEED_IMAGE_LIMIT_HOUR = 3;
+    // 24小时内登录次数超过限制需验证图片验证码
+    private static final int LOGIN_TIMES_NEED_IMAGE_LIMIT_DAY = 10;
+
+    // 一小时内登录次数限制
+    private static final int LOGIN_TIMES_LIMIT_HOUR = 5;
+    // 24小时内登录次数限制
+    private static final int LOGIN_TIMES_LIMIT_DAY = 20;
 
     @Override
     public void setImageVerificationCode(String serialNO, String code) {
@@ -66,109 +86,108 @@ public class AppCacheServiceImpl implements AppCacheService {
         return redisTemplate.opsForValue().get(RedisConsts.USER_RESET_CODE_KEY + loginName);
     }
 
+    /**
+     * 验证登录是否需要图片验证码
+     * 密码输入错误达到一定次数需要图片验证码
+     */
     @Override
-    public void setResetSendEmailTimes(String ip, String deviceId, String loginName, BusinessTypeEnum userResetPasswordEmail) {
-        recordDeviceSendTimes(deviceId, null, null, loginName);
-    }
-
-    @Override
-    public void setResetSendMobileTimes(String ipAddress, String deviceId, Integer areaCode, String loginName, BusinessTypeEnum userResetPasswordEmail) {
-        recordDeviceSendTimes(deviceId, loginName, areaCode, null);
-    }
-
-    @Override
-    public boolean checkDeviceSendTimes(String ip, String deviceId, Integer areaCode, String mobile, String email) {
-        int oneHourDeviceTimes = 3;
-        //TODO 10 to 5
-        int oneDayDeviceTimes = 5;
-        String deviceKey = RedisConsts.DEVICE_SEND_CODE_TIME_PRE + deviceId;
-        long current = System.currentTimeMillis();
-        long oneHourPre = current - 3600_000;
-        long oneDayPre = current - 3600_000 * 24;
-        Set<String> sendTimes = REDIS.zRangeByScore(deviceKey, oneHourPre, current);
-        if (sendTimes.size() + 1 > oneHourDeviceTimes) {
-            return false;
+    public ErrorCodeEnum loginCheckImageCode(Long userId, String imageCode, String serialNo) {
+        String countTimesKey = RedisConsts.PASSWORD_ERROR_TIMES_LIMIT_PRE + userId;
+        // 检查是否超限
+        if (!overDayHourTimesLimit(countTimesKey, LOGIN_TIMES_NEED_IMAGE_LIMIT_HOUR, LOGIN_TIMES_NEED_IMAGE_LIMIT_DAY)) {
+            return null;
         }
-        sendTimes = REDIS.zRangeByScore(deviceKey, oneDayPre, current);
-        if (sendTimes.size() + 1 > oneDayDeviceTimes) {
-            return false;
+        // 超限校验图片验证码
+        return imageCodeVerify(imageCode, serialNo);
+    }
+
+    @Override
+    public ErrorCodeEnum resetCheckImageCode(String loginName, String deviceId, Integer areaCode, String imageCode, String serialNo) {
+        if (StringUtil.isEmail(loginName)) {
+            if (!overCodeSendTimesLimit(deviceId, null, null, loginName)) {
+                return null;
+            }
+        } else {
+            if (!overCodeSendTimesLimit(deviceId, areaCode, loginName, null)) {
+                return null;
+            }
+        }
+        // 超限校验图片验证码
+        return imageCodeVerify(imageCode, serialNo);
+    }
+
+    @Override
+    public boolean overCodeSendTimesLimit(String deviceId, Integer areaCode, String mobile, String email) {
+        String deviceKey = RedisConsts.DEVICE_SEND_CODE_TIME_PRE + deviceId;
+        if (overDayHourTimesLimit(deviceKey, SEND_CODE_TIMES_LIMIT_HOUR, SEND_CODE_TIMES_LIMIT_DAY)) {
+            return true;
         }
         if (!StringUtils.isEmpty(areaCode) && !StringUtils.isEmpty(mobile)) {
             String mobileKey = RedisConsts.MOBILE_SEND_CODE_TIME_PRE + areaCode + mobile;
-            sendTimes = REDIS.zRangeByScore(mobileKey, oneHourPre, current);
-            if (sendTimes.size() + 1 > oneHourDeviceTimes) {
-                return false;
-            }
-            sendTimes = REDIS.zRangeByScore(mobileKey, oneDayPre, current);
-            if (sendTimes.size() + 1 > oneDayDeviceTimes) {
-                return false;
+            if (overDayHourTimesLimit(mobileKey, SEND_CODE_TIMES_LIMIT_HOUR, SEND_CODE_TIMES_LIMIT_DAY)) {
+                return true;
             }
         }
         if (!StringUtils.isEmpty(email)) {
             String emailKey = RedisConsts.EMAIL_SEND_CODE_TIME_PRE + email;
-            sendTimes = REDIS.zRangeByScore(emailKey, oneHourPre, current);
-            if (sendTimes.size() + 1 > oneHourDeviceTimes) {
-                return false;
-            }
-            sendTimes = REDIS.zRangeByScore(emailKey, oneDayPre, current);
-            if (sendTimes.size() + 1 > oneDayDeviceTimes) {
-                return false;
+            if (overDayHourTimesLimit(emailKey, SEND_CODE_TIMES_LIMIT_HOUR, SEND_CODE_TIMES_LIMIT_DAY)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
-    public void recordDeviceSendTimes(String deviceId, String mobile, Integer areaCode, String email) {
+    public void addSendCodeTimes(String deviceId, String mobile, Integer areaCode, String email) {
+        /**
+         * 增加设备验证码发送次数
+         */
         String deviceKey = RedisConsts.DEVICE_SEND_CODE_TIME_PRE + deviceId;
         long current = System.currentTimeMillis();
         REDIS.zAdd(deviceKey, current, String.valueOf(current));
-        REDIS.expire(deviceKey, AppCacheServiceImpl.ONE_DAY);
+        REDIS.expire(deviceKey, AppCacheServiceImpl.ONE_DAY_SECONDS);
+        /**
+         * 增加手机验证码发送次数
+         */
         if (!StringUtils.isEmpty(mobile)) {
             String mobileKey = RedisConsts.MOBILE_SEND_CODE_TIME_PRE + areaCode + mobile;
             REDIS.zAdd(mobileKey, current, String.valueOf(current));
-            REDIS.expire(mobileKey, AppCacheServiceImpl.ONE_DAY);
+            REDIS.expire(mobileKey, AppCacheServiceImpl.ONE_DAY_SECONDS);
         }
+        /**
+         * 增加邮箱验证码发送次数
+         */
         if (!StringUtils.isEmpty(email)) {
             String emailKey = RedisConsts.EMAIL_SEND_CODE_TIME_PRE + email;
             REDIS.zAdd(emailKey, current, String.valueOf(current));
-            REDIS.expire(emailKey, AppCacheServiceImpl.ONE_DAY);
+            REDIS.expire(emailKey, AppCacheServiceImpl.ONE_DAY_SECONDS);
         }
     }
 
     @Override
-    public boolean checkResetIsNeedImage(String loginName, String deviceId, String ip, Integer areaCode) {
-        if (StringUtil.isEmail(loginName)) {
-            return checkDeviceSendTimes(ip, deviceId, null, null, loginName);
-        }
-        return checkDeviceSendTimes(ip, deviceId, areaCode, loginName, null);
-    }
-
-    @Override
-    public void setLoginTimesLimitCount(User user, HttpServletRequest request, String deviceId) {
-        //一小时内登录五次阈值
-        int oneHourMaxLoginErrorTimes = 5;
-        //24小时内登录20次阈值
-        int oneDayMaxLoginErrorTimes = 20;
+    public void addPwdErrorTimes(User user, HttpServletRequest request, String deviceId) {
         String countTimesKey = RedisConsts.PASSWORD_ERROR_TIMES_LIMIT_PRE + user.getUserId();
         long current = System.currentTimeMillis();
 
-        long oneHourPre = current - 3600_000;
+        long oneHourPre = current - ONE_HOUR_MILLIS;
         Set<String> hasLoginTimes = REDIS.zRangeByScore(countTimesKey, oneHourPre, current);
-        if (hasLoginTimes.size() + 1 >= oneHourMaxLoginErrorTimes) {
+        if (hasLoginTimes.size() + 1 >= LOGIN_TIMES_LIMIT_HOUR) {
             loginTimesSendNotify(user, request, deviceId, 1, 5);
         }
 
-        long oneDayHourPre = current - 3600_000 * 24;
+        long oneDayHourPre = current - ONE_DAY_MILLIS;
         hasLoginTimes = REDIS.zRangeByScore(countTimesKey, oneDayHourPre, current);
-        if (hasLoginTimes.size() + 1 >= oneDayMaxLoginErrorTimes) {
+        if (hasLoginTimes.size() + 1 >= LOGIN_TIMES_LIMIT_DAY) {
             loginTimesSendNotify(user, request, deviceId, 24, 20);
         }
 
         REDIS.zAdd(countTimesKey, current, String.valueOf(current));
-        REDIS.expire(countTimesKey, AppCacheServiceImpl.ONE_DAY);
+        REDIS.expire(countTimesKey, AppCacheServiceImpl.ONE_DAY_SECONDS);
     }
 
+    /**
+     * 密码输入错误次数超限通知
+     */
     private void loginTimesSendNotify(User user, HttpServletRequest request, String deviceId, Integer hour, Integer times) {
         String sendNotifyTagKey = RedisConsts.PASSWORD_ERROR_TIMES_LIMIT_NOTIFY_TAG + user.getUserId();
         // 1.检查一小时内是否发送过
@@ -194,4 +213,40 @@ public class AppCacheServiceImpl implements AppCacheService {
         // 3.设置标识
         REDIS.setEx(sendNotifyTagKey, 1, RedisConsts.DURATION_SECONDS_OF_60_MINTUES);
     }
+
+    /**
+     * 检查对应配置的每小时/每天数量是否超限
+     */
+    private boolean overDayHourTimesLimit(String key, long hourLimit, long dayLimit) {
+        long current = System.currentTimeMillis();
+        int hourTimes = REDIS.zRangeByScore(key, current - ONE_HOUR_MILLIS, current).size();
+        int dayTimes = REDIS.zRangeByScore(key, current - ONE_DAY_MILLIS, current).size();
+        if (hourTimes + 1 > hourLimit || dayTimes + 1 > dayLimit) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 图片验证码校验
+     *
+     * @author wangs
+     * @date 2022-01-15 22:44
+     */
+    private ErrorCodeEnum imageCodeVerify(String imageCode, String serialNo) {
+        if (StringUtils.isEmpty(imageCode)) {
+            return ErrorCodeEnum.NEED_IMAGE_VERIFICATION;
+        }
+        String redisVerificationCode = getImageVerificationCode(serialNo);
+        if (StringUtils.isEmpty(redisVerificationCode)) {
+            log.error("verification code is expired! imageCode={} serialNO={}", imageCode, serialNo);
+            return ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR;
+        }
+        if (StringUtil.notEqualsIgnoreCaseWithTrim(redisVerificationCode, imageCode)) {
+            log.error("verification code is error! imageCode={} serialNO={}", imageCode, serialNo);
+            return ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR;
+        }
+        return null;
+    }
+
 }

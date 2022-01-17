@@ -89,18 +89,18 @@ public class PublicController {
 
         // 验证手机号码是否正确
         if (!MobileUtil.checkPhoneNumber(form.getMobile(), form.getAreaCode())) {
-            PublicController.log.error("sendSMS, send falied! mobile format illegal. userId={}, mobile={} areaCode={}", -1, form.getMobile(), form.getAreaCode());
+            log.error("sendSMS, send falied! mobile format illegal. userId={}, mobile={} areaCode={}", -1, form.getMobile(), form.getAreaCode());
             return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_FORMAT_ERROR);
         }
 
         String deviceId = WebUtil.getDeviceId(request);
         String ip = IpUtil.getRealIPAddress(request);
         if (StringUtils.isEmpty(deviceId)) {
-            PublicController.log.error("getSmsVerificationCode deviceId not found response  = {}", form);
+            log.error("getSmsVerificationCode deviceId not found response  = {}", form);
             return ResultUtil.failure(ErrorCodeEnum.COMMON_ILLEGALITY_ACCESS);
         }
 
-        boolean checkDevice = appCacheService.checkDeviceSendTimes(ip, deviceId, form.getAreaCode(), form.getMobile(), null);
+        boolean checkDevice = appCacheService.overCodeSendTimesLimit(deviceId, form.getAreaCode(), form.getMobile(), null);
         ResponseResult imageResult = checkImageCode(form.getImageCode(), form.getSerialNO(), checkDevice);
         if (imageResult.getCode() != 0) {
             return imageResult;
@@ -141,9 +141,9 @@ public class PublicController {
                     form.getAreaCode(),
                     userId, param, deviceId
             );
-            appCacheService.recordDeviceSendTimes(deviceId, form.getMobile(), form.getAreaCode(), null);
+            appCacheService.addSendCodeTimes(deviceId, form.getMobile(), form.getAreaCode(), null);
         } catch (Exception e) {
-            PublicController.log.error("PublicController getSmsVerificationCode error.", e);
+            log.error("PublicController getSmsVerificationCode error.", e);
             return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_SEND_FAIL);
         }
         return result ? ResultUtil.success() : ResultUtil.failure(ErrorCodeEnum.SMS_CODE_SEND_FAIL);
@@ -172,7 +172,7 @@ public class PublicController {
         try {
             String deviceId = WebUtil.getDeviceId(request);
             String ip = IpUtil.getRealIPAddress(request);
-            boolean checkDevice = appCacheService.checkDeviceSendTimes(ip, deviceId, null, null, form.getEmail());
+            boolean checkDevice = appCacheService.overCodeSendTimesLimit(deviceId, null, null, form.getEmail());
             ResponseResult imageResult = checkImageCode(form.getImageCode(), form.getSerialNO(), checkDevice);
             if (imageResult.getCode() != 0) {
                 return imageResult;
@@ -204,7 +204,7 @@ public class PublicController {
 
             HashMap<String, String> param = Maps.newHashMap();
             param.put("ip", ip);
-            appCacheService.recordDeviceSendTimes(deviceId, null, null, form.getEmail());
+            appCacheService.addSendCodeTimes(deviceId, null, null, form.getEmail());
             result = userNoticeService.sendEmail(LocaleUtil.getLocale(request),
                     businessTypeEnum,
                     NoticeSendLogConsts.BUSINESS_CODE,
@@ -212,7 +212,7 @@ public class PublicController {
                     userId, param
                     , deviceId);
         } catch (Exception e) {
-            PublicController.log.error("PublicController getEmailVerificationCode error.", e);
+            log.error("PublicController getEmailVerificationCode error.", e);
             return ResultUtil.failure(ErrorCodeEnum.EMAIL_CODE_SEND_FAIL);
         }
         return result ? ResultUtil.success() : ResultUtil.failure(ErrorCodeEnum.EMAIL_CODE_SEND_FAIL);
@@ -224,13 +224,13 @@ public class PublicController {
                 return ResultUtil.failure(ErrorCodeEnum.NEED_IMAGE_VERIFICATION);
             }
             String imageCache = appCacheService.getImageVerificationCode(serialNO);
-            PublicController.log.error("imageCode = {}", imageCache);
+            log.info("imageCode = {}", imageCache);
             if (StringUtils.isEmpty(imageCache)) {
-                PublicController.log.error("imageCache is empty");
+                log.error("imageCache is empty");
                 return ResultUtil.failure(ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR);
             }
             if (!imageCache.equalsIgnoreCase(imageCode)) {
-                PublicController.log.error("imagecache not equals imageCache={},imageCode={} ", imageCache, imageCode);
+                log.error("imageCache not equals imageCache={},imageCode={} ", imageCache, imageCode);
                 return ResultUtil.failure(ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR);
             }
             appCacheService.deleteImageVerificationCode(serialNO);

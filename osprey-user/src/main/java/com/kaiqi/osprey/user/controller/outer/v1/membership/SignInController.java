@@ -5,8 +5,6 @@ import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
-import com.kaiqi.osprey.common.consts.RedisConsts;
-import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.common.util.LocaleUtil;
 import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.common.util.StringUtil;
@@ -41,7 +39,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * 用户登录
@@ -99,14 +96,16 @@ public class SignInController {
             User user = userService.getByUserName(reqVO.getUsername());
             if (ObjectUtils.isEmpty(user)) {
                 log.error("user sign in failure username not exist {} ", reqVO);
-                return ResultUtil.failure(ErrorCodeEnum.LOGIN_LOGINNAME_OR_PASSWORD_ERROR);
+                return ResultUtil.failure(ErrorCodeEnum.LOGIN_NAME_OR_PASSWORD_ERROR);
             }
             /**
-             * 验证图片验证码
+             * 验证是否需要图片验证码
              */
-            ErrorCodeEnum checkSerialResult = checkSerialNO(user.getUserId(), reqVO);
-            if (!ObjectUtils.isEmpty(checkSerialResult)) {
-                return ResultUtil.failure(checkSerialResult);
+            if (StringUtils.isEmpty(reqVO.getVerificationCode())) {
+                ErrorCodeEnum checkImageResult = appCacheService.loginCheckImageCode(user.getUserId(), reqVO.getImageCode(), reqVO.getSerialNO());
+                if (!ObjectUtils.isEmpty(checkImageResult)) {
+                    return ResultUtil.failure(checkImageResult);
+                }
             }
             /**
              * 校验密码
@@ -116,9 +115,9 @@ public class SignInController {
                 if (!StringUtils.isEmpty(reqVO.getSerialNO())) {
                     appCacheService.deleteImageVerificationCode(reqVO.getSerialNO());
                 }
-                loginTimesLimitCount(user, request, webInfo.getDeviceId());
+                appCacheService.addPwdErrorTimes(user, request, webInfo.getDeviceId());
                 log.error("user sign in failure! password no match req {} db {}", reqVO.getPassword(), "");
-                return ResultUtil.failure(ErrorCodeEnum.LOGIN_LOGINNAME_OR_PASSWORD_ERROR);
+                return ResultUtil.failure(ErrorCodeEnum.LOGIN_NAME_OR_PASSWORD_ERROR);
             }
             /**
              * 校验用户状态
@@ -151,7 +150,7 @@ public class SignInController {
             AccessTokenResVO token = userBizService.issueToken(user, settings, webInfo, BusinessTypeEnum.USER_REGISTER_TYPE_MOBILE);
             return ResultUtil.success(token);
         } catch (Exception e) {
-            log.error("sign in unknow error = {}", e);
+            log.error("sign in unknown error = {}", e);
             return ResultUtil.failure(ErrorCodeEnum.UNKNOWN_ERROR);
         }
     }
@@ -200,39 +199,5 @@ public class SignInController {
             }
         }
         return ResultUtil.success();
-    }
-
-    /**
-     * 图片验证码校验
-     */
-    private ErrorCodeEnum checkSerialNO(Long userId, LoginReqVO reqVO) {
-        String countTimesKey = RedisConsts.PASSWORD_ERROR_TIMES_LIMIT_PRE + userId;
-        if (StringUtils.isEmpty(reqVO.getVerificationCode())) {
-            int oneHourMaxLoginErrorTimes = 3;
-            int oneDayMaxLoginErrorTimes = 10;
-            long current = System.currentTimeMillis();
-            long oneHourPre = current - 3600_000;
-            long oneDayPre = current - 3600_000 * 24;
-            Set<String> hasLoginTimes = REDIS.zRangeByScore(countTimesKey, oneHourPre, current);
-            Set<String> oneDayTime = REDIS.zRangeByScore(countTimesKey, oneDayPre, current);
-            if ((hasLoginTimes.size() + 1 > oneHourMaxLoginErrorTimes) || (oneDayTime.size() + 1 > oneDayMaxLoginErrorTimes)) {
-                if (StringUtils.isEmpty(reqVO.getSerialNO())) {
-                    return ErrorCodeEnum.NEED_IMAGE_VERIFICATION;
-                }
-                String imageVerificationCode = appCacheService.getImageVerificationCode(reqVO.getSerialNO());
-                if (StringUtils.isEmpty(imageVerificationCode)) {
-                    return ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR;
-                }
-                if (!imageVerificationCode.equalsIgnoreCase(reqVO.getImageCode())) {
-                    log.error("login check code error source={} target={}");
-                    return ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR;
-                }
-            }
-        }
-        return null;
-    }
-
-    private void loginTimesLimitCount(User user, HttpServletRequest request, String deviceId) {
-        appCacheService.setLoginTimesLimitCount(user, request, deviceId);
     }
 }

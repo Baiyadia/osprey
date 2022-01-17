@@ -30,6 +30,17 @@ public class CheckCodeServiceImpl implements CheckCodeService {
     private UserNoticeRecordService noticeRecordService;
 
     @Override
+    public ResponseResult<?> checkCode(long userId, String loginName, String verificationCode, BusinessTypeEnum businessTypeEnum, Integer verifyType) {
+        if (verifyType == 1) {
+            return checkMobileCode(userId, loginName, verificationCode, businessTypeEnum);
+        }
+        if (verifyType == 2) {
+            return checkEmailCode(userId, loginName, verificationCode, businessTypeEnum);
+        }
+        return ResultUtil.failure(ErrorCodeEnum.BUSINESS_SEND_CODE_UNSUPPORT);
+    }
+
+    @Override
     public ResponseResult<?> checkMobileCode(long userId, String loginName, String verificationCode, BusinessTypeEnum businessTypeEnum) {
         UserNoticeRecord userNoticeRecord = noticeRecordService.getLatestRecord(userId, loginName, NoticeSendLogConsts.NOTICE_TYPE_PHONE, businessTypeEnum.getType());
         // 校验正确性

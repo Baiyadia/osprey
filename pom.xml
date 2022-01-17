@@ -21,7 +21,7 @@
         <!--<module>osprey-notify</module>-->
         <module>osprey-security</module>
         <module>osprey-service</module>
-        <module>osprey-client</module>
+        <module>osprey-pay</module>
     </modules>
 
     <properties>

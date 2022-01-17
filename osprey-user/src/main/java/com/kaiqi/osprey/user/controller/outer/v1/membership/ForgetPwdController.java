@@ -3,6 +3,7 @@ package com.kaiqi.osprey.user.controller.outer.v1.membership;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.kaiqi.osprey.common.commons.ResponseResult;
+import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
 import com.kaiqi.osprey.common.util.*;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,107 +52,114 @@ public class ForgetPwdController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * 找回密码第一步-
+     *
+     * @param form
+     * @param request
+     * @return com.kaiqi.osprey.common.commons.ResponseResult
+     * @author wangs
+     * @date 2022-01-15 22:25
+     */
     @PostMapping(value = "/confirm-account")
-    public ResponseResult resetConfirmAccount(@RequestBody @Valid ConfirmAccountReqVO form,
-                                              HttpServletRequest request) {
+    public ResponseResult resetConfirmAccount(@RequestBody @Valid ConfirmAccountReqVO form, HttpServletRequest request) {
         try {
-            String deviceId = WebUtil.getDeviceId(request);
-            String ipAddress = IpUtil.getRealIPAddress(request);
-
+            /**
+             * 校验登录名合法性
+             */
             if (form.getLoginName().contains("@")) {
                 if (!StringUtil.isEmail(form.getLoginName())) {
-                    ForgetPwdController.log.error("resetConfirmAccount email format error {}", form.getLoginName());
+                    log.error("resetConfirmAccount email format error {}", form.getLoginName());
                     return ResultUtil.failure(ErrorCodeEnum.EMAIL_FORMAT_ERROR);
                 }
             } else {
-                boolean digit = MobileUtil.isDigit(form.getLoginName());
+                boolean digit = StringUtil.isMobile(form.getLoginName());
                 if (!digit) {
-                    ForgetPwdController.log.error("resetConfirmAccount mobile format error {}", form.getLoginName());
+                    log.error("resetConfirmAccount mobile format error {}", form.getLoginName());
                     return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_FORMAT_ERROR);
                 }
             }
-
+            /**
+             * 根据登录名查找
+             */
             User user = userService.getByUserName(form.getLoginName());
-
             if (user == null) {
-                ForgetPwdController.log.error("user is not exist! params={}", JSON.toJSONString(form));
+                log.error("user is not exist! params={}", JSON.toJSONString(form));
                 return ResultUtil.failure(ErrorCodeEnum.COMMON_USER_NOT_EXIST);
             }
-
-            Integer areaCode = user.getAreaCode();
-
-            if (!checkIsNeedImageVerification(form, deviceId, ipAddress, areaCode)) {
-                if (StringUtils.isEmpty(form.getImageCode())) {
-                    return ResultUtil.failure(ErrorCodeEnum.NEED_IMAGE_VERIFICATION);
-                }
-                String redisVerificationCode = appCacheService.getImageVerificationCode(form.getSerialNO());
-
-                if (StringUtils.isBlank(redisVerificationCode)) {
-                    ForgetPwdController.log.error("verification code is expired! params={}", JSON.toJSONString(form));
-                    return ResultUtil.failure(ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR);
-                }
-                if (StringUtil.notEqualsIgnoreCaseWithTrim(redisVerificationCode, form.getImageCode())) {
-                    ForgetPwdController.log.error("verification code is error! params={}", JSON.toJSONString(form));
-                    return ResultUtil.failure(ErrorCodeEnum.IMAGE_CODE_CHECK_ERROR);
-                }
+            /**
+             * 图片验证码校验
+             */
+            WebInfo webInfo = WebUtil.getWebInfo(request);
+            ErrorCodeEnum checkImageResult = appCacheService.resetCheckImageCode(
+                    form.getLoginName(), webInfo.getDeviceId(), user.getAreaCode(), form.getImageCode(), form.getSerialNO());
+            if (!ObjectUtils.isEmpty(checkImageResult)) {
+                return ResultUtil.failure(checkImageResult);
             }
-
+            /**
+             * 删除图片验证码
+             */
             appCacheService.deleteImageVerificationCode(form.getSerialNO());
-
-            ConfirmAccountResVO resForm = ConfirmAccountResVO.builder().build();
-
+            /**
+             * 发送短信/邮件验证码
+             */
+            ConfirmAccountResVO result = ConfirmAccountResVO.builder().build();
             HashMap<String, String> param = Maps.newHashMap();
-            param.put("ip", ipAddress);
-
-            if (StringUtil.isEmail(form.getLoginName().trim())) {
-                boolean sendEmailResult = userNoticeService.sendEmail(LocaleUtil.getLocale(request), BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL,
-                        NoticeSendLogConsts.BUSINESS_CODE, user.getEmail(), user.getUserId(), param, deviceId);
-                resForm.setShadeEmail(StringUtil.getStarEmail(user.getEmail()));
-                resForm.setEmail(user.getEmail());
-                resForm.setVerifyType(2);
-
-                appCacheService.setResetSendEmailTimes(ipAddress, deviceId, form.getLoginName(), BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL);
-
-                ForgetPwdController.log.info("resetConfirmAccount sendEmailResult = {} userId = {} email = {}", sendEmailResult, user.getUserId(), user.getEmail());
-            }
+            param.put("ip", webInfo.getIpAddress());
             if (MobileUtil.checkPhoneNumber(form.getLoginName(), user.getAreaCode())) {
                 boolean sendSMSResult = userNoticeService.sendSMS(LocaleUtil.getLocale(request), BusinessTypeEnum.USER_RESET_PASSWORD_MOBILE,
-                        NoticeSendLogConsts.BUSINESS_NOTIFICATION, user.getMobile(), user.getAreaCode(), user.getUserId(), param, deviceId);
-                resForm.setShadeMobile(StringUtil.getStarMobile(user.getMobile()));
-                resForm.setAreaCode(user.getAreaCode());
-                resForm.setMobile(user.getMobile());
-                resForm.setVerifyType(1);
-
-                appCacheService.setResetSendMobileTimes(ipAddress, deviceId, user.getAreaCode(), form.getLoginName(), BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL);
-                ForgetPwdController.log.info("resetConfirmAccount sendSmsResult = {} userId = {} mobile = {}", sendSMSResult, user.getUserId(), user.getMobile());
+                        NoticeSendLogConsts.BUSINESS_NOTIFICATION, user.getMobile(), user.getAreaCode(), user.getUserId(), param, webInfo.getDeviceId());
+                result.setShadeMobile(StringUtil.getStarMobile(user.getMobile()));
+                result.setAreaCode(user.getAreaCode());
+                result.setMobile(user.getMobile());
+                result.setVerifyType(1);
+                appCacheService.addSendCodeTimes(webInfo.getDeviceId(), form.getLoginName(), user.getAreaCode(), null);
+                log.info("resetConfirmAccount sendSmsResult = {} userId = {} mobile = {}", sendSMSResult, user.getUserId(), user.getMobile());
             }
+            if (StringUtil.isEmail(form.getLoginName().trim())) {
+                boolean sendEmailResult = userNoticeService.sendEmail(LocaleUtil.getLocale(request), BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL,
+                        NoticeSendLogConsts.BUSINESS_CODE, user.getEmail(), user.getUserId(), param, webInfo.getDeviceId());
+                result.setShadeEmail(StringUtil.getStarEmail(user.getEmail()));
+                result.setEmail(user.getEmail());
+                result.setVerifyType(2);
+                appCacheService.addSendCodeTimes(webInfo.getDeviceId(), null, null, form.getLoginName());
+                log.info("resetConfirmAccount sendEmailResult = {} userId = {} email = {}", sendEmailResult, user.getUserId(), user.getEmail());
+            }
+            /**
+             * 设置loginName传递给第二步
+             */
             String serialNO = UUID.randomUUID().toString();
-            resForm.setLoginName(serialNO);
+            result.setLoginName(serialNO);
             appCacheService.setResetPwdLoginName(serialNO, form.getLoginName());
-
-            return ResultUtil.success(resForm);
+            return ResultUtil.success(result);
         } catch (Exception e) {
-            log.error("confirm-account unknow error = {]", e);
+            log.error("confirm-account unknown error = {]", e);
             return ResultUtil.failure(ErrorCodeEnum.UNKNOWN_ERROR);
         }
-
     }
 
-    private boolean checkIsNeedImageVerification(ConfirmAccountReqVO form, String deviceId, String ip, Integer areaCode) {
-        return appCacheService.checkResetIsNeedImage(form.getLoginName(), deviceId, ip, areaCode);
-    }
-
+    /**
+     * 找回密码第二步-密码重置
+     *
+     * @param form
+     * @param request
+     * @return com.kaiqi.osprey.common.commons.ResponseResult
+     * @author wangs
+     * @date 2022-01-15 22:25
+     */
     @PostMapping(value = "/pwd-reset")
-    public ResponseResult resetLoginPassword(@RequestBody @Valid ResetPwdReqVO form,
-                                             HttpServletRequest request) {
+    public ResponseResult resetLoginPassword(@RequestBody @Valid ResetPwdReqVO form, HttpServletRequest request) {
         try {
+            /**
+             * 获得第一步的loginName
+             */
             String loginName = appCacheService.getResetPwdLoginName(form.getLoginName());
             if (StringUtils.isEmpty(loginName)) {
-                ForgetPwdController.log.error("resetLoginPassword password loginName is empty! loginName={}", form.getPassword(),
-                        form.getConfirmPassword());
+                log.error("resetLoginPassword password loginName is empty! loginName={}",
+                        form.getPassword(), form.getConfirmPassword());
                 return ResultUtil.failure(ErrorCodeEnum.COMMON_OPERATE_TIMEOUT);
             }
-
+            form.setLoginName(loginName);
             /**
              * 密码强度校验
              */
@@ -158,57 +167,55 @@ public class ForgetPwdController {
             if (level < 2) {
                 return ResultUtil.failure(ErrorCodeEnum.REGISTER_PASSWORD_SIMPLE);
             }
-
-            form.setLoginName(loginName);
+            /**
+             * 检查两次密码输入是否一致
+             */
             if (StringUtil.notEquals(form.getPassword(), form.getConfirmPassword())) {
-                ForgetPwdController.log.error("resetLoginPassword password not eq confirmPassword! password={},confirmPassword={}", form.getPassword(),
-                        form.getConfirmPassword());
+                log.error("resetLoginPassword password not eq confirmPassword! password={},confirmPassword={}",
+                        form.getPassword(), form.getConfirmPassword());
                 return ResultUtil.failure(ErrorCodeEnum.REGISTER_PASSWORD_NOT_EQUAL);
             }
-            String ipAddress = IpUtil.getRealIPAddress(request);
-            String deviceId = WebUtil.getDeviceId(request);
-            boolean exist = userService.checkLoginName(form.getLoginName());
-            if (!exist) {
-                ForgetPwdController.log.error("resetLoginPassword is not exist! params={}", JSON.toJSONString(form));
+            /**
+             * 检查用户名是否存在
+             */
+            User user = userService.getByUserName(form.getLoginName());
+            if (ObjectUtils.isEmpty(user)) {
+                log.error("resetLoginPassword is not exist! params={}", JSON.toJSONString(form));
                 return ResultUtil.failure(ErrorCodeEnum.COMMON_USER_NOT_EXIST);
             }
-            User user = userService.getByUserName(form.getLoginName());
-            long userId = user.getUserId();
             /**
-             *   邮箱验证
+             * 校验验证码
              */
-            if (form.getVerifyType() == 2) {
-                ResponseResult<?> emailResult = checkCodeService.checkEmailCode(
-                        user.getUserId(), form.getLoginName(), form.getEmailCode(), BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL);
-                if (emailResult != null && emailResult.getCode() > 0) {
-                    ForgetPwdController.log.error("resetLoginPassword, emailCode Check error! userid={}", userId);
-                    return emailResult;
-                }
+            ResponseResult<?> checkCodeResult = checkCodeService.checkCode(user.getUserId(),
+                    form.getVerifyType() == 1 ? user.getAreaCode() + form.getLoginName() : form.getLoginName(),
+                    form.getVerifyType() == 1 ? form.getMobileCode() : form.getEmailCode(),
+                    form.getVerifyType() == 1 ? BusinessTypeEnum.USER_RESET_PASSWORD_MOBILE : BusinessTypeEnum.USER_RESET_PASSWORD_EMAIL,
+                    form.getVerifyType());
+            if (checkCodeResult != null && checkCodeResult.getCode() > 0) {
+                log.error("Code check error! userId={}", user.getUserId());
+                return checkCodeResult;
             }
-            if (form.getVerifyType() == 1) {
-                ResponseResult<?> smsResult = checkCodeService.checkMobileCode(
-                        user.getUserId(), user.getAreaCode() + form.getLoginName(), form.getMobileCode(), BusinessTypeEnum.USER_RESET_PASSWORD_MOBILE);
-                if (smsResult != null && smsResult.getCode() > 0) {
-                    ForgetPwdController.log.error("smsResult, mobileCode check error! userid={}", userId);
-                    return smsResult;
-                }
-            }
+            /**
+             * 重置密码
+             */
             long returnValue = userService.resetPassword(user, passwordEncoder.encode(form.getPassword()));
-            ForgetPwdController.log.info("resetLoginPassword. Username:{},ip:{},returnValue:{}", form.getLoginName(), ipAddress, returnValue);
+            log.info("resetLoginPassword. Username:{},ip:{},returnValue:{}", form.getLoginName(), IpUtil.getRealIPAddress(request), returnValue);
             if (returnValue <= 0) {
-                ForgetPwdController.log.error("resetLoginPassword failure!username={}", form.getLoginName());
+                log.error("resetLoginPassword failure!username={}", form.getLoginName());
                 return ResultUtil.failure(ErrorCodeEnum.PWD_SETTING_ERROR);
             }
+            /**
+             * 清空session
+             */
             try {
-                JwtTokenUtils.clearSession(userId);
+                JwtTokenUtils.clearSession(user.getUserId());
             } catch (Exception e) {
-                ForgetPwdController.log.error("resetLoginPassword userId={}", userId);
+                log.error("resetLoginPassword error userId={}", user.getUserId());
             }
             return ResultUtil.success();
         } catch (Exception e) {
-            log.error("unknow error = {}", e);
+            log.error("unknown error = {}", e);
             return ResultUtil.failure(ErrorCodeEnum.UNKNOWN_ERROR);
         }
-
     }
 }

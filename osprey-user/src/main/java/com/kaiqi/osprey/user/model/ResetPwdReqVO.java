@@ -11,6 +11,7 @@ import java.io.Serializable;
 
 /**
  * 找回密码
+ *
  * @author wangs
  */
 @Data
@@ -18,6 +19,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResetPwdReqVO implements Serializable {
+
     private static final long serialVersionUID = 1L;
     /**
      * 用户名(手机或邮箱)
@@ -32,7 +34,7 @@ public class ResetPwdReqVO implements Serializable {
     @Length(min = 6, max = 20)
     private String password;
     /**
-     * 新密码
+     * 密码确认
      */
     @NotBlank
     @Length(min = 6, max = 20)
@@ -48,5 +50,8 @@ public class ResetPwdReqVO implements Serializable {
      */
     private String emailCode;
 
+    /**
+     * 验证类型：1短信 2邮箱
+     */
     private Integer verifyType;
 }

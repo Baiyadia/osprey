@@ -18,7 +18,7 @@ public enum ErrorCodeEnum implements ErrorCode {
     /**
      * 用户名或者密码错误
      */
-    LOGIN_LOGINNAME_OR_PASSWORD_ERROR(1002, 400, "用户名或者密码错误"),
+    LOGIN_NAME_OR_PASSWORD_ERROR(1002, 400, "用户名或者密码错误"),
 
     /**
      * 用户输入手机格式错误

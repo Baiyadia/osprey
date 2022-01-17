@@ -30,6 +30,5 @@ public class SignOutController {
             log.error("unknown error = {}", e);
             return ResultUtil.failure(ErrorCodeEnum.UNKNOWN_ERROR);
         }
-
     }
 }
