@@ -23,7 +23,7 @@ public enum ErrorCodeEnum implements ErrorCode {
     /**
      * 用户输入手机格式错误
      */
-    USER_MOBILE_FORMAT_ERROR(1003, 400, "用户输入手机格式错误"),
+    USER_MOBILE_FORMAT_ERROR(1003, 400, "手机格式错误"),
 
     /**
      * 注册国家不支持

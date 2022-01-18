@@ -4,6 +4,8 @@ import com.kaiqi.osprey.common.mybatis.service.CrudService;
 import com.kaiqi.osprey.service.criteria.UserFeedbackExample;
 import com.kaiqi.osprey.service.domain.UserFeedback;
 
+import java.util.List;
+
 /**
  * 用户反馈表 服务接口
  *
@@ -11,5 +13,7 @@ import com.kaiqi.osprey.service.domain.UserFeedback;
  * @date 2020-02-06 12:07:39
  */
 public interface UserFeedbackService extends CrudService<UserFeedback, UserFeedbackExample, Long> {
+
+    List<UserFeedback> getUserFeedbackListHours(Long userId, int hours);
 
 }

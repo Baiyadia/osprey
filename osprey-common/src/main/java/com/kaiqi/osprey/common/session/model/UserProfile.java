@@ -41,7 +41,11 @@ public class UserProfile {
      */
     private Integer registerType;
 
+    /**
+     * 联系人数量
+     */
     private Integer contactCount;
+
     /**
      * 密码最后更新时间
      */

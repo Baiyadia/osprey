@@ -2,6 +2,7 @@ package com.kaiqi.osprey.user.controller.outer.v1.ucenter;
 
 import com.google.common.collect.Maps;
 import com.kaiqi.osprey.common.commons.ResponseResult;
+import com.kaiqi.osprey.common.commons.entity.WebInfo;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.consts.NoticeSendLogConsts;
 import com.kaiqi.osprey.common.consts.RedisConsts;
@@ -9,12 +10,12 @@ import com.kaiqi.osprey.common.consts.SwitchConsts;
 import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.common.session.model.SessionInfo;
 import com.kaiqi.osprey.common.session.model.UserProfile;
-import com.kaiqi.osprey.common.util.*;
+import com.kaiqi.osprey.common.util.LocaleUtil;
+import com.kaiqi.osprey.common.util.ResultUtil;
+import com.kaiqi.osprey.common.util.StringUtil;
+import com.kaiqi.osprey.common.util.WebUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
 import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
-import com.kaiqi.osprey.service.criteria.UserExample;
-import com.kaiqi.osprey.service.criteria.UserFeedbackExample;
-import com.kaiqi.osprey.service.criteria.UserSettingsExample;
 import com.kaiqi.osprey.service.domain.User;
 import com.kaiqi.osprey.service.domain.UserFeedback;
 import com.kaiqi.osprey.service.domain.UserSettings;
@@ -59,6 +60,9 @@ public class UserCenterController {
     //用户最大反馈数量
     private static final int USER_MAX_FEEDBACK_NUMBER = 10;
 
+    /**
+     * 用户基本信息
+     */
     @PostMapping("/profile")
     public ResponseResult profile(HttpServletRequest request) {
         try {
@@ -77,7 +81,7 @@ public class UserCenterController {
             profileVo.setContactCount(dbUser.getContactCount());
             return ResultUtil.success(profileVo);
         } catch (Exception e) {
-            log.error("users center profile error {}", e);
+            log.error("users center profile error", e);
             return ResultUtil.failure(ErrorCodeEnum.USER_CENTER_GET_PROFILE_ERROR);
         }
     }
@@ -88,20 +92,24 @@ public class UserCenterController {
     @PostMapping("/feedback")
     public ResponseResult feedback(@RequestBody FeedbackReqVO feedbackReqVO, HttpServletRequest request) {
         try {
-            JwtUserDetails currentLoginUser = JwtTokenUtils.getCurrentLoginUser(request);
-            UserFeedback feedback = new UserFeedback();
-
+            JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUser(request);
             if (!StringUtils.isEmpty(feedbackReqVO.getEmail()) && !StringUtil.isEmail(feedbackReqVO.getEmail())) {
                 return ResultUtil.failure(ErrorCodeEnum.EMAIL_FORMAT_ERROR);
             }
-            UserFeedbackExample feedbackExample = new UserFeedbackExample();
-            feedbackExample.createCriteria().andUserIdEqualTo(currentLoginUser.getUserId())
-                           .andCreateTimeBetween(DateUtil.addHours(new Date(), -24), new Date());
-            List<UserFeedback> byExample = userFeedbackService.getByExample(feedbackExample);
-            if (byExample.size() >= USER_MAX_FEEDBACK_NUMBER) {
+            if (!StringUtils.isEmpty(feedbackReqVO.getMobile()) && !StringUtil.isMobile(feedbackReqVO.getMobile())) {
+                return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_FORMAT_ERROR);
+            }
+            /**
+             * 检查过去24小时反馈数量是否超限
+             */
+            List<UserFeedback> feedbackList = userFeedbackService.getUserFeedbackListHours(tokenUser.getUserId(), 24);
+            if (feedbackList.size() >= USER_MAX_FEEDBACK_NUMBER) {
                 return ResultUtil.failure(ErrorCodeEnum.USER_SUBMIT_FEEDBACK_LIMIT);
             }
-
+            /**
+             * 反馈记录
+             */
+            UserFeedback feedback = new UserFeedback();
             feedback.setContent(feedbackReqVO.getContent());
             feedback.setCreateTime(new Date());
             feedback.setStatus(SwitchConsts.ON);
@@ -112,40 +120,45 @@ public class UserCenterController {
             if (!StringUtils.isEmpty(feedbackReqVO.getMobile())) {
                 feedback.setMobile(feedbackReqVO.getMobile());
             }
-            feedback.setUserId(currentLoginUser.getUserId());
+            feedback.setUserId(tokenUser.getUserId());
             feedback.setType(FeedbackTypeEnum.FEEDBACK_PROBLEM.getType());
             userFeedbackService.add(feedback);
             return ResultUtil.success();
         } catch (Exception e) {
-            log.error("users center submit feedback error {} ", e);
+            log.error("users center submit feedback error", e);
             return ResultUtil.failure(ErrorCodeEnum.USER_SUBMIT_FEEDBACK_FAILURE);
         }
     }
 
+    /**
+     * 更换昵称
+     */
     @PostMapping("nickname")
     public ResponseResult updateNickname(@RequestParam("nickname") String nickname,
                                          HttpServletRequest request) {
-        JwtUserDetails currentLoginUser = JwtTokenUtils.getCurrentLoginUser(request);
         try {
-            UserExample example = new UserExample();
-            example.createCriteria()
-                   .andUserIdEqualTo(currentLoginUser.getUserId())
-                   .andNicknameEqualTo(nickname);
-            boolean result = userService.updateNickname(currentLoginUser.getUserId(), nickname);
+            JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUser(request);
+            /**
+             * 更新昵称
+             */
+            boolean result = userService.updateNickname(tokenUser.getUserId(), nickname);
+            /**
+             * 更新session中的昵称
+             */
             if (result) {
-                SessionInfo session = JwtTokenUtils.getSession(currentLoginUser.getUserId());
+                SessionInfo session = JwtTokenUtils.getSession(tokenUser.getUserId());
                 session.setUsername(nickname);
                 JwtTokenUtils.updateSession(session);
             }
             return ResultUtil.success();
         } catch (Exception e) {
-            log.error("updateNickname failure user {}  {}", currentLoginUser, e);
+            log.error("updateNickname failure", e);
             return ResultUtil.failure(ErrorCodeEnum.USER_SET_NICKNAME_ERROR);
         }
     }
 
     /**
-     * 向老手机号发送验证码
+     * 更换手机号/邮箱第一步 - 向旧设备手机/邮箱发送验证码
      *
      * @param request
      * @param type    1.更换手机 2更换邮箱
@@ -154,37 +167,34 @@ public class UserCenterController {
     @RequestMapping("changeMobileOrEmailPre")
     public ResponseResult changeMobileOrEmailPre(HttpServletRequest request,
                                                  @RequestParam("type") Integer type) {
-        JwtUserDetails jwtUserDetails = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-        User user = userService.getById(jwtUserDetails.getUserId());
-        String deviceId = WebUtil.getDeviceId(request);
-        String ip = IpUtil.getRealIPAddress(request);
-        HashMap<String, String> param = Maps.newHashMap();
-        param.put("ip", ip);
-        if (type == 1) {
-            if (StringUtils.isEmpty(user.getMobile())) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_NOT_BIND);
-            }
-            userNoticeService.sendSMS(LocaleUtil.getLocale(request),
-                    BusinessTypeEnum.USER_CHANGE_MOBILE_SEND_OLD,
-                    NoticeSendLogConsts.BUSINESS_CODE,
-                    user.getMobile(),
-                    user.getAreaCode(),
-                    user.getUserId(), param, deviceId
-            );
-        } else {
-            if (StringUtils.isEmpty(user.getEmail())) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_EMAIL_NOT_BIND);
-            }
-            userNoticeService.sendEmail(LocaleUtil.getLocale(request),
-                    BusinessTypeEnum.USER_CHANGE_EMAIL_SEND_OLD,
-                    NoticeSendLogConsts.BUSINESS_CODE,
-                    user.getEmail(),
-                    user.getUserId(), param, deviceId
-            );
+        JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
+        User dbUser = userService.getById(tokenUser.getUserId());
+        if (type == 1 && StringUtils.isEmpty(dbUser.getMobile())) {
+            return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_NOT_BIND);
         }
+        if (type == 2 && StringUtils.isEmpty(dbUser.getEmail())) {
+            return ResultUtil.failure(ErrorCodeEnum.USER_EMAIL_NOT_BIND);
+        }
+        /**
+         * 发送验证码
+         */
+        WebInfo webInfo = WebUtil.getWebInfo(request);
+        HashMap<String, String> param = Maps.newHashMap();
+        param.put("ip", webInfo.getIpAddress());
+        userNoticeService.sendNoticeByUserName(
+                type == 1 ? dbUser.getMobile() : dbUser.getEmail(),
+                LocaleUtil.getLocale(request),
+                type == 1 ? BusinessTypeEnum.USER_CHANGE_MOBILE_SEND_OLD : BusinessTypeEnum.USER_CHANGE_EMAIL_SEND_OLD,
+                NoticeSendLogConsts.BUSINESS_CODE,
+                dbUser,
+                webInfo.getDeviceId(),
+                param);
         return ResultUtil.success();
     }
 
+    /**
+     * 更换手机号/邮箱第二步 - 旧设备验证码校验
+     */
     @RequestMapping("checkOldDeviceCode")
     public ResponseResult checkOldDeviceCode(@RequestParam("type") Integer type,
                                              @RequestParam("oldDeviceCode") String oldDeviceCode,
@@ -200,68 +210,97 @@ public class UserCenterController {
         if (oldCheckResult.getCode() != 0) {
             return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
-
-        Map<String, String> step1SuccessTab = Maps.newHashMap();
+        /**
+         * 验证码校验完成后，生成校验码，用于第三步的校验
+         */
         String signStr = UUID.randomUUID().toString().replace("-", "");
         REDIS.setEx(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId(), signStr, RedisConsts.DURATION_SECONDS_OF_15_MINTUES);
+
+        Map<String, String> step1SuccessTab = Maps.newHashMap();
         step1SuccessTab.put("step2Sign", signStr);
         return ResultUtil.success(step1SuccessTab);
     }
 
+    /**
+     * 更换手机号/邮箱第三步 - 更换手机号
+     */
     @RequestMapping("changeMobile")
     public ResponseResult changeMobile(HttpServletRequest request,
                                        @RequestBody @Valid ChangeMobileReqVO form) {
-
-        JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-
-        User dbUser = userService.getById(user.getUserId());
-
-        String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId());
+        JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
+        User dbUser = userService.getById(tokenUser.getUserId());
+        /**
+         * 校验第二步生成的校验码
+         */
+        String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + tokenUser.getUserId());
         if (StringUtils.isEmpty(step2Sign) || !step2Sign.equals(form.getOldMobileCode())) {
             return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
-
-        ResponseResult<?> emailResult = checkCodeService.checkMobileCode(
-                user.getUserId(),
+        /**
+         * 再次校验验证码
+         */
+        ResponseResult<?> checkResult = checkCodeService.checkMobileCode(
+                tokenUser.getUserId(),
                 form.getAreaCode() + form.getMobile(),
                 form.getMobileCode(),
                 BusinessTypeEnum.USER_CHANGE_MOBILE);
-        if (emailResult.getCode() != 0) {
+        if (checkResult.getCode() != 0) {
             return ResultUtil.failure(ErrorCodeEnum.SMS_CODE_VERIFY_ERROR);
         }
-        dbUser.setAreaCode(form.getAreaCode());
-        dbUser.setMobile(form.getMobile());
-        userService.editById(dbUser);
-        SessionInfo session = JwtTokenUtils.getSession(user.getUserId());
+        /**
+         * 更新DB
+         */
+        User user4Update = new User();
+        user4Update.setId(dbUser.getId());
+        user4Update.setAreaCode(form.getAreaCode());
+        user4Update.setMobile(form.getMobile());
+        userService.editById(user4Update);
+        /**
+         * 更新session
+         */
+        SessionInfo session = JwtTokenUtils.getSession(tokenUser.getUserId());
         session.setMobile(form.getMobile());
         JwtTokenUtils.updateSession(session);
         return ResultUtil.success();
     }
 
+    /**
+     * 更换手机号/邮箱第三步 - 更换邮箱
+     */
     @RequestMapping("changeEmail")
     public ResponseResult changeEmail(HttpServletRequest request,
                                       @RequestBody @Valid ChangeEmailReqVO form) {
-
-        JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-        //检查密码放前面
-        User dbUser = userService.getById(user.getUserId());
-        String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + user.getUserId());
+        JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
+        User dbUser = userService.getById(tokenUser.getUserId());
+        /**
+         * 校验第二步生成的校验码
+         */
+        String step2Sign = REDIS.get(RedisConsts.USER_CHANGE_OLD_DEVICE + tokenUser.getUserId());
         if (StringUtils.isEmpty(step2Sign) || !step2Sign.equals(form.getOldEmailCode())) {
             return ResultUtil.failure(ErrorCodeEnum.USER_OLD_CODE_VERIFY_ERROR);
         }
-
+        /**
+         * 再次校验验证码
+         */
         ResponseResult<?> emailResult = checkCodeService.checkEmailCode(
-                user.getUserId(),
+                tokenUser.getUserId(),
                 form.getEmail(),
                 form.getEmailCode(),
                 BusinessTypeEnum.USER_CHANGE_EMAIL);
         if (emailResult.getCode() != 0) {
             return ResultUtil.failure(ErrorCodeEnum.EMAIL_CODE_VERIFY_ERROR);
         }
-
-        dbUser.setEmail(form.getEmail());
-        userService.editById(dbUser);
-        SessionInfo session = JwtTokenUtils.getSession(user.getUserId());
+        /**
+         * 更新DB
+         */
+        User user4Update = new User();
+        user4Update.setId(dbUser.getId());
+        user4Update.setEmail(form.getEmail());
+        userService.editById(user4Update);
+        /**
+         * 更新session
+         */
+        SessionInfo session = JwtTokenUtils.getSession(tokenUser.getUserId());
         session.setEmail(form.getEmail());
         JwtTokenUtils.updateSession(session);
         return ResultUtil.success();
@@ -277,11 +316,12 @@ public class UserCenterController {
     @RequestMapping("setAddressVisible")
     public ResponseResult setAddressVisible(HttpServletRequest request,
                                             @RequestParam("mobileAuth") Integer mobileAuth) {
-        JwtUserDetails user = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-        UserSettingsExample example = new UserSettingsExample();
-        example.createCriteria().andUserIdEqualTo(user.getUserId());
-        UserSettings userSettings = userSettingsService.getOneByExample(example);
-        userSettings.setMobileAuthFlag(mobileAuth);
+        JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
+        UserSettings userSettings = userSettingsService.getByUserId(tokenUser.getUserId());
+
+        UserSettings settings4Update = new UserSettings();
+        settings4Update.setId(userSettings.getId());
+        settings4Update.setMobileAuthFlag(mobileAuth);
         userSettingsService.editById(userSettings);
         return ResultUtil.success();
     }
