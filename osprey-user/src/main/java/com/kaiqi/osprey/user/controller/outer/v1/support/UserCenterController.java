@@ -44,7 +44,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/v1/osprey/users/support/user-center")
-@Api(value = "center", tags = "用户中心")
+@Api(value = "user-center", tags = "用户中心")
 public class UserCenterController {
 
     @Autowired
