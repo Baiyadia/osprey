@@ -26,6 +26,8 @@ import com.kaiqi.osprey.user.service.AppCacheService;
 import com.kaiqi.osprey.user.service.CheckCodeService;
 import com.kaiqi.osprey.user.service.UserBizService;
 import com.kaiqi.osprey.user.service.UserNoticeService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,7 @@ import java.util.HashMap;
 @Slf4j
 @RestController
 @RequestMapping("/v1/osprey/users/membership/sign-in")
+@Api(value = "sign-in", tags = "用户登录")
 public class SignInController {
 
     @Autowired
@@ -70,6 +73,7 @@ public class SignInController {
     /**
      * 用户登录
      */
+    @ApiOperation("用户登录")
     @PostMapping("")
     public ResponseResult login(@RequestBody @Valid LoginReqVO reqVO, HttpServletRequest request) {
         try {

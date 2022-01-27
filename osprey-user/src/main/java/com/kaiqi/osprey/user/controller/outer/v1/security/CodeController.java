@@ -1,4 +1,4 @@
-package com.kaiqi.osprey.user.controller.outer.v1.support;
+package com.kaiqi.osprey.user.controller.outer.v1.security;
 
 import com.google.common.collect.Maps;
 import com.kaiqi.osprey.common.commons.ResponseResult;
@@ -16,6 +16,8 @@ import com.kaiqi.osprey.user.model.MobileVerifyCodeReqVO;
 import com.kaiqi.osprey.user.service.AppCacheService;
 import com.kaiqi.osprey.user.service.UserNoticeService;
 import com.kaiqi.osprey.user.util.VerificationCodeUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
@@ -38,8 +40,9 @@ import java.util.UUID;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/v1/osprey/users/support/public")
-public class PublicController {
+@RequestMapping("/v1/osprey/users/security/code")
+@Api(value = "code", tags = "验证码支持")
+public class CodeController {
 
     @Autowired
     private AppCacheService appCacheService;
@@ -51,7 +54,8 @@ public class PublicController {
     /**
      * 获得图片验证码
      */
-    @PostMapping(value = "/verification-code/image")
+    @ApiOperation("获得图片验证码")
+    @PostMapping(value = "/image")
     public ResponseResult getImageVerificationCode() {
         Map<String, Object> params = Maps.newHashMap();
         Object[] imageCode = VerificationCodeUtils.getImageCode(4);
@@ -69,7 +73,8 @@ public class PublicController {
     /**
      * @description 无登录, 获取手机验证码
      */
-    @PostMapping(value = "/verification-code/mobile")
+    @ApiOperation("无登录, 获取手机验证码")
+    @PostMapping(value = "/mobile")
     public ResponseResult getSmsVerificationCode(@RequestBody @Valid MobileVerifyCodeReqVO form,
                                                  HttpServletRequest request) {
         try {
@@ -153,7 +158,8 @@ public class PublicController {
     /**
      * @description 无登录, 获取邮箱验证码
      */
-    @PostMapping(value = "/verification-code/email")
+    @ApiOperation("无登录, 获取邮箱验证码")
+    @PostMapping(value = "/email")
     public ResponseResult getEmailVerificationCode(@RequestBody @Valid EmailVerifyCodeReqVO form,
                                                    HttpServletRequest request) {
         try {

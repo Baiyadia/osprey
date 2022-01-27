@@ -4,6 +4,8 @@ import com.kaiqi.osprey.common.commons.ResponseResult;
 import com.kaiqi.osprey.common.commons.enums.ErrorCodeEnum;
 import com.kaiqi.osprey.common.util.ResultUtil;
 import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,11 +21,13 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RestController
 @RequestMapping(value = "/v1/osprey/users/membership/sign-out")
+@Api(value = "sign-out", tags = "用户注销")
 public class SignOutController {
 
     /**
      * 用户注销
      */
+    @ApiOperation("用户注销")
     @GetMapping(value = "")
     public ResponseResult logout(HttpServletRequest request) {
         try {

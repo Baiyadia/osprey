@@ -1,4 +1,4 @@
-package com.kaiqi.osprey.user.controller.outer.v1.ucenter;
+package com.kaiqi.osprey.user.controller.outer.v1.support;
 
 import com.google.common.collect.Maps;
 import com.kaiqi.osprey.common.commons.ResponseResult;
@@ -9,131 +9,60 @@ import com.kaiqi.osprey.common.consts.RedisConsts;
 import com.kaiqi.osprey.common.consts.SwitchConsts;
 import com.kaiqi.osprey.common.redis.REDIS;
 import com.kaiqi.osprey.common.session.model.SessionInfo;
-import com.kaiqi.osprey.common.session.model.UserProfile;
 import com.kaiqi.osprey.common.util.LocaleUtil;
 import com.kaiqi.osprey.common.util.ResultUtil;
-import com.kaiqi.osprey.common.util.StringUtil;
 import com.kaiqi.osprey.common.util.WebUtil;
 import com.kaiqi.osprey.security.jwt.model.JwtUserDetails;
 import com.kaiqi.osprey.security.jwt.util.JwtTokenUtils;
 import com.kaiqi.osprey.service.domain.User;
-import com.kaiqi.osprey.service.domain.UserFeedback;
-import com.kaiqi.osprey.service.domain.UserSettings;
-import com.kaiqi.osprey.service.service.UserFeedbackService;
 import com.kaiqi.osprey.service.service.UserService;
-import com.kaiqi.osprey.service.service.UserSettingsService;
 import com.kaiqi.osprey.user.enums.BusinessTypeEnum;
-import com.kaiqi.osprey.user.enums.FeedbackTypeEnum;
 import com.kaiqi.osprey.user.model.ChangeEmailReqVO;
 import com.kaiqi.osprey.user.model.ChangeMobileReqVO;
-import com.kaiqi.osprey.user.model.FeedbackReqVO;
+import com.kaiqi.osprey.user.model.WalletPathReqVO;
 import com.kaiqi.osprey.user.service.CheckCodeService;
+import com.kaiqi.osprey.user.service.UserBizService;
 import com.kaiqi.osprey.user.service.UserNoticeService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author wangs
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/osprey/users")
+@RequestMapping("/v1/osprey/users/support/user-center")
+@Api(value = "center", tags = "用户中心")
 public class UserCenterController {
 
     @Autowired
-    private UserFeedbackService userFeedbackService;
-    @Autowired
     private UserService userService;
+    @Autowired
+    private UserBizService userBizService;
+    @Autowired
+    private UserNoticeService userNoticeService;
     @Autowired
     private CheckCodeService checkCodeService;
     @Autowired
-    private UserSettingsService userSettingsService;
-    @Autowired
-    private UserNoticeService userNoticeService;
-
-    //用户最大反馈数量
-    private static final int USER_MAX_FEEDBACK_NUMBER = 10;
-
-    /**
-     * 用户基本信息
-     */
-    @PostMapping("/profile")
-    public ResponseResult profile(HttpServletRequest request) {
-        try {
-            JwtUserDetails userDetails = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-            User dbUser = userService.getById(userDetails.getUserId());
-//            UserSettingsExample settingsExample = new UserSettingsExample();
-//            settingsExample.createCriteria().andUserIdEqualTo(dbUser.getUserId());
-//            UserSettings settings = userSettingsService.getOneByExample(settingsExample);
-            UserProfile profileVo = new UserProfile();
-            profileVo.setOpenId(userDetails.getOpenId());
-            profileVo.setEmail(userDetails.getEmail());
-            profileVo.setMobile(userDetails.getMobile());
-            profileVo.setUsername(userDetails.getUsername());
-            profileVo.setTradePasswordFlag(userDetails.getTradePasswordSetFlag());
-            profileVo.setTradePassUpdate(dbUser.getTradePassUpdate());
-            profileVo.setContactCount(dbUser.getContactCount());
-            return ResultUtil.success(profileVo);
-        } catch (Exception e) {
-            log.error("users center profile error", e);
-            return ResultUtil.failure(ErrorCodeEnum.USER_CENTER_GET_PROFILE_ERROR);
-        }
-    }
-
-    /**
-     * 用户反馈
-     */
-    @PostMapping("/feedback")
-    public ResponseResult feedback(@RequestBody FeedbackReqVO feedbackReqVO, HttpServletRequest request) {
-        try {
-            JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUser(request);
-            if (!StringUtils.isEmpty(feedbackReqVO.getEmail()) && !StringUtil.isEmail(feedbackReqVO.getEmail())) {
-                return ResultUtil.failure(ErrorCodeEnum.EMAIL_FORMAT_ERROR);
-            }
-            if (!StringUtils.isEmpty(feedbackReqVO.getMobile()) && !StringUtil.isMobile(feedbackReqVO.getMobile())) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_MOBILE_FORMAT_ERROR);
-            }
-            /**
-             * 检查过去24小时反馈数量是否超限
-             */
-            List<UserFeedback> feedbackList = userFeedbackService.getUserFeedbackListHours(tokenUser.getUserId(), 24);
-            if (feedbackList.size() >= USER_MAX_FEEDBACK_NUMBER) {
-                return ResultUtil.failure(ErrorCodeEnum.USER_SUBMIT_FEEDBACK_LIMIT);
-            }
-            /**
-             * 反馈记录
-             */
-            UserFeedback feedback = new UserFeedback();
-            feedback.setContent(feedbackReqVO.getContent());
-            feedback.setCreateTime(new Date());
-            feedback.setStatus(SwitchConsts.ON);
-            feedback.setUpdateTime(new Date());
-            if (!StringUtils.isEmpty(feedbackReqVO.getEmail())) {
-                feedback.setEmail(feedbackReqVO.getEmail());
-            }
-            if (!StringUtils.isEmpty(feedbackReqVO.getMobile())) {
-                feedback.setMobile(feedbackReqVO.getMobile());
-            }
-            feedback.setUserId(tokenUser.getUserId());
-            feedback.setType(FeedbackTypeEnum.FEEDBACK_PROBLEM.getType());
-            userFeedbackService.add(feedback);
-            return ResultUtil.success();
-        } catch (Exception e) {
-            log.error("users center submit feedback error", e);
-            return ResultUtil.failure(ErrorCodeEnum.USER_SUBMIT_FEEDBACK_FAILURE);
-        }
-    }
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 更换昵称
      */
-    @PostMapping("nickname")
+    @ApiOperation("更换昵称")
+    @PostMapping("/nickname")
     public ResponseResult updateNickname(@RequestParam("nickname") String nickname,
                                          HttpServletRequest request) {
         try {
@@ -164,7 +93,8 @@ public class UserCenterController {
      * @param type    1.更换手机 2更换邮箱
      * @return
      */
-    @RequestMapping("changeMobileOrEmailPre")
+    @ApiOperation("更换手机号/邮箱第一步 - 向旧设备手机/邮箱发送验证码")
+    @RequestMapping("/changeMobileOrEmailPre")
     public ResponseResult changeMobileOrEmailPre(HttpServletRequest request,
                                                  @RequestParam("type") Integer type) {
         JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
@@ -195,7 +125,8 @@ public class UserCenterController {
     /**
      * 更换手机号/邮箱第二步 - 旧设备验证码校验
      */
-    @RequestMapping("checkOldDeviceCode")
+    @ApiOperation("更换手机号/邮箱第二步 - 旧设备验证码校验")
+    @RequestMapping("/checkOldDeviceCode")
     public ResponseResult checkOldDeviceCode(@RequestParam("type") Integer type,
                                              @RequestParam("oldDeviceCode") String oldDeviceCode,
                                              HttpServletRequest request) {
@@ -224,7 +155,8 @@ public class UserCenterController {
     /**
      * 更换手机号/邮箱第三步 - 更换手机号
      */
-    @RequestMapping("changeMobile")
+    @ApiOperation("更换手机号/邮箱第三步 - 更换手机号")
+    @RequestMapping("/changeMobile")
     public ResponseResult changeMobile(HttpServletRequest request,
                                        @RequestBody @Valid ChangeMobileReqVO form) {
         JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
@@ -267,7 +199,8 @@ public class UserCenterController {
     /**
      * 更换手机号/邮箱第三步 - 更换邮箱
      */
-    @RequestMapping("changeEmail")
+    @ApiOperation("更换手机号/邮箱第三步 - 更换邮箱")
+    @RequestMapping("/changeEmail")
     public ResponseResult changeEmail(HttpServletRequest request,
                                       @RequestBody @Valid ChangeEmailReqVO form) {
         JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
@@ -307,23 +240,52 @@ public class UserCenterController {
     }
 
     /**
-     * 设置手机验证
-     *
-     * @param request
-     * @param mobileAuth 0不验证 1验证
-     * @return
+     * 更新交易密码
      */
-    @RequestMapping("setAddressVisible")
-    public ResponseResult setAddressVisible(HttpServletRequest request,
-                                            @RequestParam("mobileAuth") Integer mobileAuth) {
+    @ApiOperation("更新交易密码")
+    @PostMapping("/updateTradePwd")
+    public ResponseResult updateTradePwd(@RequestBody WalletPathReqVO walletPathReqVO,
+                                         HttpServletRequest request) {
         JwtUserDetails tokenUser = JwtTokenUtils.getCurrentLoginUserFromToken(request);
-        UserSettings userSettings = userSettingsService.getByUserId(tokenUser.getUserId());
-
-        UserSettings settings4Update = new UserSettings();
-        settings4Update.setId(userSettings.getId());
-        settings4Update.setMobileAuthFlag(mobileAuth);
-        userSettingsService.editById(userSettings);
-        return ResultUtil.success();
+        try {
+            if (ObjectUtils.isEmpty(tokenUser)) {
+                return ResultUtil.failure(ErrorCodeEnum.USER_NO_LOGIN);
+            }
+            /**
+             * 未设置过交易密码
+             */
+            if (tokenUser.getTradePasswordSetFlag() == SwitchConsts.OFF) {
+                boolean result = userBizService.setTradePassword(
+                        passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + tokenUser.getUserId()),
+                        tokenUser.getUserId(),
+                        walletPathReqVO.getEncodePath());
+                if (result) {
+                    SessionInfo session = JwtTokenUtils.getSession(tokenUser.getUserId());
+                    session.setTradePasswordSetFlag(SwitchConsts.ON);
+                    JwtTokenUtils.updateSession(session);
+                }
+                return ResultUtil.success();
+            }
+            /**
+             * 设置过交易密码
+             */
+            if (tokenUser.getTradePasswordSetFlag() == SwitchConsts.ON) {
+                if (!StringUtils.isEmpty(walletPathReqVO.getValidatePass())) {
+                    User dbUser = userService.getById(tokenUser.getUserId());
+                    if (!passwordEncoder.matches((walletPathReqVO.getValidatePass() + tokenUser.getUserId()), dbUser.getTradePasswordCryptoHash())) {
+                        return ResultUtil.failure(ErrorCodeEnum.TRADE_PASSWORD_CHECK_ERROR);
+                    }
+                    userBizService.setTradePassword(passwordEncoder.encode(walletPathReqVO.getEncryptedPass() + tokenUser.getUserId()),
+                            tokenUser.getUserId(), walletPathReqVO.getEncodePath());
+                    return ResultUtil.success();
+                }
+            }
+            log.error("updateTradePwd error validatePass is null user {}", tokenUser.getUserId());
+            return ResultUtil.failure(ErrorCodeEnum.SET_TRADE_PASSWORD_ERROR);
+        } catch (Exception e) {
+            log.error("updateTradePwd error userId {} e {}", tokenUser.getUserId(), e);
+            return ResultUtil.failure(ErrorCodeEnum.SET_TRADE_PASSWORD_ERROR);
+        }
     }
 }
 

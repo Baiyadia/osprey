@@ -18,6 +18,8 @@ import com.kaiqi.osprey.user.service.AppCacheService;
 import com.kaiqi.osprey.user.service.CheckCodeService;
 import com.kaiqi.osprey.user.service.UserNoticeService;
 import com.kaiqi.osprey.user.util.PwdStrengthUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping(value = "/v1/osprey/users/membership/forget-pwd")
+@Api(value = "forget-pwd", tags = "找回密码")
 public class ForgetPwdController {
 
     @Autowired
@@ -53,7 +56,7 @@ public class ForgetPwdController {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * 找回密码第一步
+     * 找回密码第一步-发送验证码
      *
      * @param form
      * @param request
@@ -61,6 +64,7 @@ public class ForgetPwdController {
      * @author wangs
      * @date 2022-01-15 22:25
      */
+    @ApiOperation("找回密码第一步-发送验证码")
     @PostMapping(value = "/confirm-account")
     public ResponseResult resetConfirmAccount(@RequestBody @Valid ConfirmAccountReqVO form, HttpServletRequest request) {
         try {
@@ -147,6 +151,7 @@ public class ForgetPwdController {
      * @author wangs
      * @date 2022-01-15 22:25
      */
+    @ApiOperation("找回密码第二步-密码重置")
     @PostMapping(value = "/pwd-reset")
     public ResponseResult resetLoginPassword(@RequestBody @Valid ResetPwdReqVO form, HttpServletRequest request) {
         try {

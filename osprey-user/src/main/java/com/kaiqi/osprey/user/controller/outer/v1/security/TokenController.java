@@ -14,6 +14,8 @@ import com.kaiqi.osprey.service.service.UserLoginRecordService;
 import com.kaiqi.osprey.service.service.UserService;
 import com.kaiqi.osprey.user.model.AccessTokenResVO;
 import com.kaiqi.osprey.user.model.UserProfileVO;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +30,9 @@ import java.util.Date;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/v1/osprey/users/security/oauth")
-public class RefreshTokenController {
+@RequestMapping(value = "/v1/osprey/users/security/token")
+@Api(value = "token", tags = "token支持")
+public class TokenController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -41,6 +44,7 @@ public class RefreshTokenController {
     /**
      * 刷新token
      */
+    @ApiOperation("刷新token")
     @GetMapping(value = "/refresh")
     public ResponseResult refresh(HttpServletRequest request) {
         try {

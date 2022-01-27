@@ -13,6 +13,8 @@ import com.kaiqi.osprey.user.model.RegisterReqVO;
 import com.kaiqi.osprey.user.service.CheckCodeService;
 import com.kaiqi.osprey.user.service.UserBizService;
 import com.kaiqi.osprey.user.util.PwdStrengthUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/v1/osprey/users/membership/sign-up")
+@Api(value = "sign-up", tags = "用户注册")
 public class SignUpController {
 
     @Autowired
@@ -46,6 +49,7 @@ public class SignUpController {
     /**
      * 手机号注册
      */
+    @ApiOperation("手机号注册")
     @PostMapping("/mobile")
     public ResponseResult registerByMobile(@RequestBody @Valid RegisterReqVO form, HttpServletRequest request) {
         try {
@@ -111,6 +115,7 @@ public class SignUpController {
     /**
      * 邮箱注册
      */
+    @ApiOperation("邮箱注册")
     @PostMapping("email")
     public ResponseResult registerByEmail(@RequestBody @Valid RegisterReqVO form, HttpServletRequest request) {
         try {
