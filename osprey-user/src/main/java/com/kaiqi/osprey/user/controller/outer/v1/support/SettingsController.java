@@ -53,6 +53,7 @@ public class SettingsController {
      * @param mobileAuth 0不验证 1验证
      * @return
      */
+    @ApiOperation("设置手机验证")
     @RequestMapping("addressVisible")
     public ResponseResult setAddressVisible(HttpServletRequest request,
                                             @RequestParam("mobileAuth") Integer mobileAuth) {
@@ -93,6 +94,7 @@ public class SettingsController {
     /**
      * 提交用户反馈
      */
+    @ApiOperation("提交用户反馈")
     @PostMapping("/feedback")
     public ResponseResult feedback(@RequestBody FeedbackReqVO feedbackReqVO, HttpServletRequest request) {
         try {
