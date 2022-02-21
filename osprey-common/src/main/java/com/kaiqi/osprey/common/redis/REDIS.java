@@ -35,7 +35,7 @@ public class REDIS {
 //
 //    //配置RedisTemplate
 //    @Bean
-//    public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory){
+//    public RedisTemplate<String, Serializable> redisTemplate(@Qualifier("lettuceConnectionFactory") LettuceConnectionFactory lettuceConnectionFactory){
 //        RedisTemplate<String, Serializable> redisTemplate = new RedisTemplate<String, Serializable>();
 //        //设置key的存储方式为字符串
 //        redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -46,6 +46,41 @@ public class REDIS {
 //        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
 //        return redisTemplate;
 //    }
+
+//自己定义了一个RedisTemplate
+//@Bean
+//@SuppressWarnings("all")
+//public RedisTemplate<String, Object> redisTemplate(@Qualifier("lettuceConnectionFactoryUvPv") RedisConnectionFactory factory) {
+//    RedisTemplate<String, Object> template = new RedisTemplate<>();
+//    template.setConnectionFactory(factory);
+//
+//    //Json序列化配置
+//    Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<Object>(Object.class);
+//    ObjectMapper om = new ObjectMapper();
+//    om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+//    om.activateDefaultTyping(om.getPolymorphicTypeValidator());
+//    om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+//    //解决序列化问题
+//    om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//    jackson2JsonRedisSerializer.setObjectMapper(om);
+//
+//    //String的序列化
+//    StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+//
+//    //key采用String的序列化方式
+//    template.setKeySerializer(stringRedisSerializer);
+//    //hash的key也采用String的序列化方式
+//    template.setHashKeySerializer(stringRedisSerializer);
+//
+//    //value序列化方式采用jackson
+//    template.setValueSerializer(jackson2JsonRedisSerializer);
+//
+//    //hash的value序列化方式采用jackson
+//    template.setHashValueSerializer(jackson2JsonRedisSerializer);
+//    template.afterPropertiesSet();
+//
+//    return template;
+//}
 
     public static String get(String key) {
         if (StringUtils.isEmpty(key)) {

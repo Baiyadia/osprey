@@ -3,10 +3,10 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <!--多环境配置下，通过 application.yml 传递参数过来，property标签 取不到环境参数，需要用springProperty标签 -->
     <springProperty scope="context" name="logging.path" source="logging.path"/>
+    <springProperty scope="context" name="osprey.app.env.name" source="osprey.app.env.name"/>
     <springProperty scope="context" name="logging.level.default" source="logging.level.default"/>
     <springProperty scope="context" name="logging.level.mybatis" source="logging.level.mybatis"/>
     <springProperty scope="context" name="logging.level.commons" source="logging.level.commons"/>
-    <springProperty scope="context" name="osprey.app.env.name" source="osprey.app.env.name"/>
 
     <!-- appender：用来格式化日志输出节点，有两个属性name和class，class用来指定哪种输出策略，常用就是控制台输出策略和文件输出策略 -->
     <!-- RollingFileAppender：是FileAppender的子类。到满足一定的条件就会创建一个新的文件，然后将日志写入到新的文件中 -->
@@ -75,7 +75,7 @@
     <logger name="org.mybatis" level="${logging.level.mybatis}"/>
     <logger name="com.kaiqi.osprey" level="${logging.level.commons}"/>
 
-    <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。level默认是DEBUG -->
+    <!-- root节点是必选节点，用来指定最基础的日志输出级别，所有低于此级别的日志不会被输出。只有一个level属性，默认是DEBUG -->
     <root level="${logging.level.default}">
         <appender-ref ref="ASYNC_FILE_ALL"/>
         <appender-ref ref="ASYNC_FILE_ERROR"/>
